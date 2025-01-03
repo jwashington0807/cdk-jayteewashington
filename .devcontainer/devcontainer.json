@@ -1,0 +1,31 @@
+{
+	"name": "cdk-jayteewashington",
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:latest",
+	"features": {
+		"ghcr.io/devcontainers/features/aws-cli:latest": {},
+		"ghcr.io/devcontainers-extra/features/aws-cdk:latest": {},
+		"ghcr.io/devcontainers/features/github-cli:latest": {},
+		"ghcr.io/mikaello/devcontainer-features/modern-shell-utils:latest": {}
+	},
+	// Mount the host's ~/.aws folder into the container.
+	// This may be overridden in a Codespace by a dotfile repo.
+	"mounts": [
+		"source=${env:HOME}${env:USERPROFILE}/.aws,target=/home/vscode/.aws,type=bind"
+	],
+	// Set Envs. The chosen AWS_PROFILE should be found in the above mount/repo
+	"remoteEnv": {
+		"AWS_PROFILE": "dev"
+	},
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			"settings": {
+				"redhat.telemetry.enabled": false,
+				"aws.telemetry": false
+			},
+			"extensions": [
+				"AmazonWebServices.aws-toolkit-vscode"
+			]
+		}
+	}
+}
