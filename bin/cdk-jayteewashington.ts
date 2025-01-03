@@ -1,13 +1,14 @@
 #!/usr/bin/env node
+import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { jayteewashingtonStack } from '../lib/cdk-jayteewashington-stack';
-import * as gitbranch from 'git-branch';
-import { CDKContext } from '../types';
-import { Environment } from 'aws-cdk-lib/aws-appconfig';
 
 // Creation of a new app
+const app = new cdk.App();
+new jayteewashingtonStack(app, 'JayTeeStack', {
+});
 
-export const getContext = async (app: cdk.App): Promise<CDKContext> => {
+/*export const getContext = async (app: cdk.App): Promise<CDKContext> => {
     return new Promise(async (resolve, reject) => {
         try {
             const currentBranch = await gitbranch();
@@ -53,4 +54,4 @@ const createStacks = async () =>  {
 };
 
 // Starting Point of APP Creation
-createStacks();
+createStacks();*/
