@@ -70,10 +70,6 @@
     "globals": {
       "appName": "jayteewashington",
       "region": "us-east-1"
-    },
-    "environments": {
-      "environment": "DEV",
-      "branchName": "DEV"
     }
   }
 }
