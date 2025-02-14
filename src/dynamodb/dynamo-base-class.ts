@@ -9,7 +9,7 @@ export class BaseDynamoDBTable extends TableV2 {
     constructor(scope: Stack, id: string, props: BaseDynamoDBTableProps) {
         super(scope, id, {
             ...props,
-            billing: Billing.onDemand(),
+            //billing: Billing.onDemand(),
             partitionKey: {
                 name: props.partitionKey?.name || 'defaultPartitionKey',
                 type: AttributeType.STRING,
