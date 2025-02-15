@@ -70,6 +70,16 @@
     "globals": {
       "appName": "jayteewashington",
       "region": "us-east-1"
+    },
+    "repositoryOwner": "jayteewashington",
+    "infrastructureRepoName": "cdk-jayteewashington",
+    "dev": {
+      "env": "development",
+      "branch": "dev"
+    },
+    "prod": {
+      "env": "production",
+      "branch": "main"
     }
   }
 }
