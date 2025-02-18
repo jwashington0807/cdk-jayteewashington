@@ -87,14 +87,14 @@
       "appName": "jayteewashington",
       "region": "us-east-1"
     },
-    "repositoryOwner": "jayteewashington",
+    "repositoryOwner": "jwashington0807",
     "infrastructureRepoName": "cdk-jayteewashington",
     "dev": {
-      "env": "development",
+      "env": "dev",
       "branch": "dev"
     },
     "prod": {
-      "env": "production",
+      "env": "prod",
       "branch": "master"
     }
   }

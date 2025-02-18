@@ -22,12 +22,15 @@ if(!deployEnvironment || !environment.includes(deployEnvironment))
 let env = app.node.tryGetContext(deployEnvironment);
 
 // Get variables from cdk.json
-const infraRepoName = app.node.tryGetContext('infrastructureRepoName');
+const envName = env.env;
+const infrastructureBranchName = env.branch;
+const infrastructureRepoName = app.node.tryGetContext('infrastructureRepoName');
 const repoOwner = app.node.tryGetContext('repositoryOwner');
 
 env = {
-    ...env,
-    infraRepoName,
+    envName,
+    infrastructureRepoName,
+    infrastructureBranchName,
     repoOwner,
     description: `Stack for the ${deployEnvironment} CI pipeline deployed using the CDK. If you need to delete this stack, delete the ${deployEnvironment} CDK infrastructure stack first.`
 }

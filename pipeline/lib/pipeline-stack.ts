@@ -23,8 +23,11 @@ export class PipelineStack extends Stack {
       envName,
       infrastructureRepoName,
       infrastructureBranchName,
-      repoOwner
+      repoOwner,
+      description
     } = props;
+
+    console.log(`envName: ${envName}, repoOwner: ${repoOwner}`);
     //#endregion
 
     //#region Github
@@ -55,7 +58,7 @@ export class PipelineStack extends Stack {
 
     //#region Artifacts S3
     // Create S3 Bucket to hold Artifacts
-    const artifactBucket = new Bucket(this, `JTArtifactsBucket`,
+    const artifactBucket = new Bucket(this, 'JTArtifactsBucket',
       {
         bucketName: `jayteewashington-${envName}-codepipeline-artifact-bucket`,
         autoDeleteObjects: true,
@@ -68,14 +71,13 @@ export class PipelineStack extends Stack {
     // Create new Pipeline Project
     const infrastructureSourceOutput = new Artifact('InfrastructureSourceOutput');
 
-    // Create new Project for Pipeline
     const infrastructureBuildProject = new PipelineProject(
       this,
       'InfrastructureProject',
       {
         role: infrastructureDeployRole,
         environment: {
-          buildImage: LinuxBuildImage.AMAZON_LINUX_2_5
+          buildImage: LinuxBuildImage.STANDARD_7_0
         },
         environmentVariables: {
           DEPLOY_ENVIRONMENT: {
@@ -115,6 +117,8 @@ export class PipelineStack extends Stack {
         artifactBucket 
       }
     )
+
+    console.log(infrastructureRepoName);
 
     // Add Source Stage
     pipeline.addStage({
