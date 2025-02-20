@@ -132,6 +132,7 @@ export class PipelineStack extends Stack {
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
         },
         domainNames: [domainName],
+        
         certificate
       }
     );
