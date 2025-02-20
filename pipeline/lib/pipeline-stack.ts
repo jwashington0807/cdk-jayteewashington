@@ -6,7 +6,7 @@ import { CompositePrincipal, PolicyDocument, PolicyStatement, Role, ServicePrinc
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
 import { BuildSpec, LinuxBuildImage, PipelineProject, Cache, LocalCacheMode } from 'aws-cdk-lib/aws-codebuild';
-import { CodeBuildAction, GitHubSourceAction } from 'aws-cdk-lib/aws-codepipeline-actions';
+import { CodeBuildAction, GitHubSourceAction, S3DeployAction } from 'aws-cdk-lib/aws-codepipeline-actions';
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
@@ -35,7 +35,8 @@ export class PipelineStack extends Stack {
       description
     } = props;
 
-    console.log(`envName: ${envName}, repoOwner: ${repoOwner}, domain: ${domain}, subdomain: ${subdomain}`);
+    const angularTarget = envName == 'prod' ? 'production' : 'development';
+
     //#endregion
 
     //#region Github
@@ -121,7 +122,6 @@ export class PipelineStack extends Stack {
 
     //#region CloudFront
   
-    // New CloudFront Distribution
     const distribution = new Distribution(
       this,
       `JTCloudFrontApplication`,
@@ -153,6 +153,7 @@ export class PipelineStack extends Stack {
     // Create Artifacts
     const infrastructureSourceOutput = new Artifact('InfrastructureSourceOutput');
     const angularSourceOutput = new Artifact('AngularSourceOutput');
+    const angularBuildOutput = new Artifact('AngularBuildOutput');
 
     //#endregion
 
@@ -163,7 +164,7 @@ export class PipelineStack extends Stack {
       'angularBuildProject',
       {
         environment: {
-          buildImage: LinuxBuildImage.AMAZON_LINUX_2_5 // for some reason, if not stated, it'll use Node version from the past
+          buildImage: LinuxBuildImage.AMAZON_LINUX_2_5
         },
         buildSpec: BuildSpec.fromObject({
           version: '0.2',
@@ -173,19 +174,20 @@ export class PipelineStack extends Stack {
                 nodejs: '20.x'
               },
               commands: [
-                'npm install'
+                'npm install',
+                'npm install -g @angular/cli'
               ]
             },
             build: {
               commands: [
                 'echo Building Angular Application...',
-                `ng build --target ${envName}`
+                `ng build`
               ]
             }
           },
           artifacts: {
-            'base-directory': 'dist',
-            files: '**/*'
+            files: '**/*',
+            'base-directory': 'dist/browser'
           },
           cache: {
             paths: [
@@ -197,6 +199,8 @@ export class PipelineStack extends Stack {
       }
     )
 
+    //#endregion
+
     //#region Infrastructure Pipeline Project
 
     const infrastructureBuildProject = new PipelineProject(
@@ -205,7 +209,7 @@ export class PipelineStack extends Stack {
       {
         role: infrastructureDeployRole,
         environment: {
-          buildImage: LinuxBuildImage.AMAZON_LINUX_2_5
+          buildImage: LinuxBuildImage.AMAZON_LINUX_2_5 // for some reason, if not stated, it'll use Node version from the past
         },
         environmentVariables: {
           DEPLOY_ENVIRONMENT: {
@@ -235,6 +239,10 @@ export class PipelineStack extends Stack {
       }
     );
 
+    //#endregion
+
+    //#region Pipeline
+
     // Create new Pipeline that will exist in the Project
     const pipeline = new Pipeline(
       this,
@@ -246,12 +254,20 @@ export class PipelineStack extends Stack {
       }
     )
 
-    console.log(infrastructureRepoName);
-
     // Add Source Stage
     pipeline.addStage({
       stageName: 'Source',
       actions: [
+        new GitHubSourceAction(
+          {
+            owner: repoOwner,
+            repo: angularAppRepoName,
+            actionName: 'AngularSource',
+            branch: angularBranchName,
+            output: angularSourceOutput,
+            oauthToken: gitHubToken
+          }
+        ),
         new GitHubSourceAction(
           {
             owner: repoOwner,
@@ -265,10 +281,29 @@ export class PipelineStack extends Stack {
       ]
     })
 
+    // Add Build Stage
+    pipeline.addStage({
+      stageName: 'Build',
+      actions: [
+        new CodeBuildAction({
+          actionName: 'BuildAngular',
+          project: angularPipelineBuildProject, 
+          input: angularSourceOutput,
+          outputs: [ angularBuildOutput ]
+        })
+      ]
+    });
+
     // Add Deployment Stage
     pipeline.addStage({
       stageName: 'Deploy',
       actions: [
+        new S3DeployAction({
+          actionName: 'DeployAngularApp',
+          bucket: angularBucket,
+          input: angularBuildOutput,
+          extract: true // pulls everything out of the dist folder and into the root directory of S3 bucket
+        }),
         new CodeBuildAction({
           actionName: 'DeployCdkInfrastructure',
           project: infrastructureBuildProject, 
@@ -276,7 +311,7 @@ export class PipelineStack extends Stack {
           role: infrastructureDeployRole
         })
       ]
-    })
+    });
   
     //#endregion
   }

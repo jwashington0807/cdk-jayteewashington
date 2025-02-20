@@ -87,7 +87,7 @@
       "appName": "jayteewashington",
       "region": "us-east-1"
     },
-    "angularRepoName": "jayteewashington-app",
+    "angularRepoName": "app-jayteewashington",
     "domain": "jayteewashington.com",
     "repositoryOwner": "jwashington0807",
     "infrastructureRepoName": "cdk-jayteewashington",
