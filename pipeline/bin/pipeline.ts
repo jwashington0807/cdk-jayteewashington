@@ -26,12 +26,20 @@ const envName = env.env;
 const infrastructureBranchName = env.branch;
 const infrastructureRepoName = app.node.tryGetContext('infrastructureRepoName');
 const repoOwner = app.node.tryGetContext('repositoryOwner');
+const domain = app.node.tryGetContext('domain');
+const subdomain = env.subdomain;
+const angularAppRepoName  = app.node.tryGetContext('angularRepoName');
+const angularBranchName  = env.angularBranchName;
 
 env = {
     envName,
     infrastructureRepoName,
     infrastructureBranchName,
     repoOwner,
+    domain,
+    subdomain,
+    angularAppRepoName,
+    angularBranchName,
     description: `Stack for the ${deployEnvironment} CI pipeline deployed using the CDK. If you need to delete this stack, delete the ${deployEnvironment} CDK infrastructure stack first.`
 }
 

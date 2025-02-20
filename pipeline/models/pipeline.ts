@@ -5,5 +5,9 @@ export interface PipelineStackProps extends StackProps {
     infrastructureRepoName: string;
     infrastructureBranchName: string;
     repoOwner: string;
+    domain: string;
+    subdomain: string;
+    angularAppRepoName: string;
+    angularBranchName: string;
     description: string;
 }

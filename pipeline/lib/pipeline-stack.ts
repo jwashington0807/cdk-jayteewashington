@@ -5,9 +5,13 @@ import { RemovalPolicy, SecretValue, Stack } from 'aws-cdk-lib';
 import { CompositePrincipal, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
-import { BuildSpec, LinuxBuildImage, PipelineProject } from 'aws-cdk-lib/aws-codebuild';
+import { BuildSpec, LinuxBuildImage, PipelineProject, Cache, LocalCacheMode } from 'aws-cdk-lib/aws-codebuild';
 import { CodeBuildAction, GitHubSourceAction } from 'aws-cdk-lib/aws-codepipeline-actions';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
+import { Distribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
+import { S3BucketOrigin} from 'aws-cdk-lib/aws-cloudfront-origins';
+import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 
 export class PipelineStack extends Stack {
   constructor(scope: Construct, id: string, props: PipelineStackProps) {
@@ -24,10 +28,14 @@ export class PipelineStack extends Stack {
       infrastructureRepoName,
       infrastructureBranchName,
       repoOwner,
+      domain,
+      subdomain,
+      angularAppRepoName,
+      angularBranchName,
       description
     } = props;
 
-    console.log(`envName: ${envName}, repoOwner: ${repoOwner}`);
+    console.log(`envName: ${envName}, repoOwner: ${repoOwner}, domain: ${domain}, subdomain: ${subdomain}`);
     //#endregion
 
     //#region Github
@@ -56,7 +64,17 @@ export class PipelineStack extends Stack {
 
     //#endregion
 
-    //#region Artifacts S3
+    //#region S3 Buckets
+
+    // Creaate S3 Bucket to hold Angular Files
+    const angularBucket = new Bucket(this, 'JTAppBucket',
+      {
+        bucketName: `jayteewashington-${envName}-frontend-angular-bucket`,
+        autoDeleteObjects: true,
+        removalPolicy: RemovalPolicy.DESTROY
+      }
+    );
+
     // Create S3 Bucket to hold Artifacts
     const artifactBucket = new Bucket(this, 'JTArtifactsBucket',
       {
@@ -64,12 +82,122 @@ export class PipelineStack extends Stack {
         autoDeleteObjects: true,
         removalPolicy: RemovalPolicy.DESTROY
       }
-    )
+    );
     //#endregion
 
-    //#region Pipeline
-    // Create new Pipeline Project
+    //#region Domain
+
+    // concat the domain name. If prod, the subdomain will be blank. Taken from the cdk.json file
+    const domainName = `${subdomain}${domain}`;
+
+    // creating a hosted zone for the certificate and other items needed for this application
+    const hostedZone = new HostedZone(
+      this,
+      "HostedZone",
+      {
+        zoneName: domainName
+      }
+    );
+
+    // Creating SSL certificate
+    const certificate = new Certificate(
+      this,
+      "SSLCert",
+      {
+        domainName,
+        validation: CertificateValidation.fromDns(hostedZone)
+      }
+    )
+
+    // Only access into the App should be through CloudFront. Granting only READ to S3 bucket
+    const originAccessIdentity = new OriginAccessIdentity(
+      this,
+      'OriginAccessIdentity'
+    );
+
+    angularBucket.grantRead(originAccessIdentity);
+
+    //#endregion
+
+    //#region CloudFront
+  
+    // New CloudFront Distribution
+    const distribution = new Distribution(
+      this,
+      `JTCloudFrontApplication`,
+      {
+        defaultRootObject: 'index.html',
+        defaultBehavior: {
+          origin: S3BucketOrigin.withOriginAccessControl(angularBucket),
+          viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
+        },
+        domainNames: [domainName],
+        certificate
+      }
+    );
+
+    // Creation of Records
+    const arecord = new ARecord(
+      this,
+      'ARecord',
+      {
+        zone: hostedZone,
+        target: RecordTarget.fromAlias(new CloudFrontTarget(distribution))
+      }
+    )
+
+    //#endregion
+
+    //#region Artifacts
+
+    // Create Artifacts
     const infrastructureSourceOutput = new Artifact('InfrastructureSourceOutput');
+    const angularSourceOutput = new Artifact('AngularSourceOutput');
+
+    //#endregion
+
+    //#region Angular Pipeline Project
+
+    const angularPipelineBuildProject = new PipelineProject(
+      this,
+      'angularBuildProject',
+      {
+        environment: {
+          buildImage: LinuxBuildImage.AMAZON_LINUX_2_5 // for some reason, if not stated, it'll use Node version from the past
+        },
+        buildSpec: BuildSpec.fromObject({
+          version: '0.2',
+          phases: {
+            install: {
+              'runtime-versions': {
+                nodejs: '20.x'
+              },
+              commands: [
+                'npm install'
+              ]
+            },
+            build: {
+              commands: [
+                'echo Building Angular Application...',
+                `ng build --target ${envName}`
+              ]
+            }
+          },
+          artifacts: {
+            'base-directory': 'dist',
+            files: '**/*'
+          },
+          cache: {
+            paths: [
+              'node_modules/**/*'
+            ]
+          }
+        }),
+        cache: Cache.local(LocalCacheMode.CUSTOM)
+      }
+    )
+
+    //#region Infrastructure Pipeline Project
 
     const infrastructureBuildProject = new PipelineProject(
       this,
@@ -77,7 +205,7 @@ export class PipelineStack extends Stack {
       {
         role: infrastructureDeployRole,
         environment: {
-          buildImage: LinuxBuildImage.STANDARD_7_0
+          buildImage: LinuxBuildImage.AMAZON_LINUX_2_5
         },
         environmentVariables: {
           DEPLOY_ENVIRONMENT: {
@@ -151,6 +279,5 @@ export class PipelineStack extends Stack {
     })
   
     //#endregion
-
   }
 }
