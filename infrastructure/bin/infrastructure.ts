@@ -12,6 +12,5 @@ new InfrastructureStack(app,
   `${DEPLOY_ENVIRONMENT}-Infrastructure-Stack`, {
     DEPLOY_ENVIRONMENT,
     description: `Stack for the ${DEPLOY_ENVIRONMENT} infrastructure deployed using the CI Pipeline. If you need
-    to delete everything involving the ${DEPLOY_ENVIRONMENT} environment, delete this stack firs, then the CI stack.`
-
+    to delete everything involving the ${DEPLOY_ENVIRONMENT} environment, delete this stack first, then the CI stack.`
 });

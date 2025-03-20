@@ -12,15 +12,11 @@ import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatem
 import { Distribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3BucketOrigin} from 'aws-cdk-lib/aws-cloudfront-origins';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
+import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 
 export class PipelineStack extends Stack {
   constructor(scope: Construct, id: string, props: PipelineStackProps) {
     super(scope, id, props);
-
-    //#region Console
-
-    // Simple Test to Confirm
-    console.log(props);
 
     // Destructure the props so that we can use the individual variables in this file
     const {
@@ -35,13 +31,16 @@ export class PipelineStack extends Stack {
       description
     } = props;
 
-    const angularTarget = envName == 'prod' ? 'production' : 'development';
-
     //#endregion
 
     //#region Github
     // Get Github Token
-    const gitHubToken = SecretValue.secretsManager('github-token');
+    //const ghToken = SecretValue.secretsManager('github-new-token');
+
+    const gitHubToken = Secret.fromSecretAttributes(this, "github-token", {
+      secretCompleteArn:
+        "arn:aws:secretsmanager:us-east-1:700081520826:secret:github-token-UG7mOa"
+    });
 
     // Create new role for github
     const infrastructureDeployRole = new Role(this, "InfrastructureDeployRole", {
@@ -266,7 +265,7 @@ export class PipelineStack extends Stack {
             actionName: 'AngularSource',
             branch: angularBranchName,
             output: angularSourceOutput,
-            oauthToken: gitHubToken
+            oauthToken: gitHubToken.secretValue
           }
         ),
         new GitHubSourceAction(
@@ -276,7 +275,7 @@ export class PipelineStack extends Stack {
             actionName: 'InfrastructureSource',
             branch: infrastructureBranchName,
             output: infrastructureSourceOutput,
-            oauthToken: gitHubToken
+            oauthToken: gitHubToken.secretValue
           }
         )
       ]
