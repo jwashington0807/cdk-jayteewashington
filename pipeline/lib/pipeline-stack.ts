@@ -231,7 +231,7 @@ export class PipelineStack extends Stack {
             },
             build: {
               commands: [
-                `cdk deploy --context env=${envName}`
+                `cdk deploy --context env=${envName} --require-approval never`
               ]
             }
           }
