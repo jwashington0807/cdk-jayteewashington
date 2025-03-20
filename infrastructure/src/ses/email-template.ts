@@ -1,7 +1,6 @@
-import { IConfirmationEvent, UserEmail } from "../../models/ses";
+import { IEmailEvent } from "../../models/ses";
 
-export const ConfirmationEmail = (input: IConfirmationEvent) => {
-    const EmailType = (email: UserEmail) => {
+export const EmailTemplate = (email: IEmailEvent) => {
     return `
     <!DOCTYPE html>
     <html lang="en">
@@ -19,5 +18,4 @@ export const ConfirmationEmail = (input: IConfirmationEvent) => {
         Name: ${email.comments} <br>
         </body>
     </html>`;
-    }
 }

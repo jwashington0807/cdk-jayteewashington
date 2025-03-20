@@ -5,7 +5,7 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { RemovalPolicy } from 'aws-cdk-lib';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { BaseLambda } from '../src/lambda/lambda-config-base-class';
-import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { BaseIam } from '../src/iam/iam-base-class';
 
 export class InfrastructureStack extends cdk.Stack {
@@ -37,13 +37,13 @@ export class InfrastructureStack extends cdk.Stack {
     // Define Lambda Function
     const lambdafunction = new BaseLambda(this, `jayteewashington-${DEPLOY_ENVIRONMENT}-email-lambda`, {
       entry: 'src/lambda/emailnotification.ts',
-      name: 'JT Email Contact',
+      name: 'JTEmailContactForm',
       roles: emailLambdaRole
     });
 
     // Define API Gateway
     const api = new RestApi(this, `jayteewashington-${DEPLOY_ENVIRONMENT}-api-gateway`, {
-      restApiName: 'JT API Gateway',
+      restApiName: 'JTAPIGateway',
       description: 'This service is used with an Angular Front-End to process data'
     });
 

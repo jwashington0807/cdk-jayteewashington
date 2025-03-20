@@ -95,13 +95,15 @@
       "env": "dev",
       "subdomain": "dev.",
       "angularBranchName": "dev",
-      "branch": "dev"
+      "branch": "dev",
+      "api": ""
     },
     "prod": {
       "env": "prod",
       "subdomain": "",
       "angularBranchName": "master",
-      "branch": "master"
+      "branch": "master",
+      "api": ""
     }
   }
 }

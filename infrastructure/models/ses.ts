@@ -11,9 +11,6 @@ export interface IEmailEvent extends UserEmail {
     reciever: string;
 }
 
-export interface IConfirmationEvent extends UserEmail {
-    recieved: string;
-}
 
 export interface BaseRoleProps extends RoleProps {
     roleName: string;

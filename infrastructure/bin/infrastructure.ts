@@ -5,7 +5,6 @@ import { InfrastructureStack } from '../lib/infrastructure-stack';
 const app = new cdk.App();
 
 if(!process.env.DEPLOY_ENVIRONMENT) throw new Error("DEPLOY_ENVIRONMENT is not defined.");
-
 const { DEPLOY_ENVIRONMENT } = process.env;
 
 new InfrastructureStack(app, 
