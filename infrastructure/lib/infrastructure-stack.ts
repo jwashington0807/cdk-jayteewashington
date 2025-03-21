@@ -16,7 +16,7 @@ export class InfrastructureStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: InfrastructureStackProps) {
     super(scope, id, props);
 
-    const { DEPLOY_ENVIRONMENT, DEPLOY_DOMAIN, DEPLOY_CERT_ARN, description } = props;
+    const { DEPLOY_ENVIRONMENT, DEPLOY_DOMAIN, DEPLOY_CERT_ARN } = props;
 
     console.log(`Domain Configured - ${DEPLOY_DOMAIN}`);
     console.log(`${DEPLOY_ENVIRONMENT} environment detected. Deploying S3 Bucket`);
@@ -31,6 +31,7 @@ export class InfrastructureStack extends cdk.Stack {
       }
     );
 
+    console.log(`${DEPLOY_ENVIRONMENT} Creating Lambda Role`);
     // Create SES Lambda Role
     const emailLambdaRole = new BaseIam(this, 'jayteewashington-ses-role', {
       roleName: 'SesSenderRole',
@@ -39,6 +40,7 @@ export class InfrastructureStack extends cdk.Stack {
       policyStatementActions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents']
     });
 
+    console.log(`${DEPLOY_ENVIRONMENT} Creating Lambda Function`);
     // Define Lambda Function
     const lambdafunction = new BaseLambda(this, `jayteewashington-email-lambda`, {
       entry: 'src/lambda/emailnotification.ts',
@@ -46,6 +48,7 @@ export class InfrastructureStack extends cdk.Stack {
       roles: emailLambdaRole
     });
 
+    console.log(`${DEPLOY_ENVIRONMENT} Creating API Gateway`);
     // Define API Gateway
     const api = new LambdaRestApi(this, `jayteewashington-api-gateway`, {
       handler: lambdafunction,
@@ -66,15 +69,18 @@ export class InfrastructureStack extends cdk.Stack {
       }
     });
 
+    console.log(`${DEPLOY_ENVIRONMENT} Retrieving Hosted Zone`);
     // Retrieve Hosted Zone
     const zone = HostedZone.fromLookup(this, `${DEPLOY_DOMAIN}-api-gateway-hosted-zone`, { domainName: `${DEPLOY_DOMAIN}`});
 
+    console.log(`${DEPLOY_ENVIRONMENT} Creating A Record`);
     // Create A Record to go to hosted zone
     const arecord = new ARecord(this, `${DEPLOY_ENVIRONMENT}-api-gateway-arecord`, {
       zone: zone,
       target: RecordTarget.fromAlias(new ApiGatewayv2DomainProperties(`${DEPLOY_DOMAIN}`, zone.hostedZoneId))
     })
 
+    console.log(`${DEPLOY_ENVIRONMENT} Creating Lambda Integration`);
     // Define Lambda Integration
     const processDataIntegration = new LambdaIntegration(lambdafunction);
     api.root.addResource('email').addMethod('POST', processDataIntegration);
