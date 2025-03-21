@@ -31,7 +31,6 @@ export class InfrastructureStack extends cdk.Stack {
       }
     );
 
-    console.log(`${DEPLOY_ENVIRONMENT} Creating Lambda Role`);
     // Create SES Lambda Role
     const emailLambdaRole = new BaseIam(this, 'jayteewashington-ses-role', {
       roleName: 'SesSenderRole',
@@ -40,7 +39,6 @@ export class InfrastructureStack extends cdk.Stack {
       policyStatementActions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents']
     });
 
-    console.log(`${DEPLOY_ENVIRONMENT} Creating Lambda Function`);
     // Define Lambda Function
     const lambdafunction = new BaseLambda(this, `jayteewashington-email-lambda`, {
       entry: 'src/lambda/emailnotification.ts',
@@ -48,7 +46,6 @@ export class InfrastructureStack extends cdk.Stack {
       roles: emailLambdaRole
     });
 
-    console.log(`${DEPLOY_ENVIRONMENT} Creating API Gateway`);
     // Define API Gateway
     const api = new LambdaRestApi(this, `jayteewashington-api-gateway`, {
       handler: lambdafunction,
