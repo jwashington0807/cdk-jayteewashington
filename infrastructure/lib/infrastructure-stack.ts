@@ -35,16 +35,16 @@ export class InfrastructureStack extends cdk.Stack {
     });
 
     // Define Lambda Function
-    const lambdafunction = new BaseLambda(this, `jayteewashington-${DEPLOY_ENVIRONMENT}-email-lambda`, {
+    const lambdafunction = new BaseLambda(this, `jayteewashington-email-lambda`, {
       entry: 'src/lambda/emailnotification.ts',
-      name: 'JTEmailContactForm',
+      name: `${DEPLOY_ENVIRONMENT}-jayteewashington-contact-email`,
       roles: emailLambdaRole
     });
 
     // Define API Gateway
-    const api = new RestApi(this, `jayteewashington-${DEPLOY_ENVIRONMENT}-api-gateway`, {
-      restApiName: 'JTAPIGateway',
-      description: 'This service is used with an Angular Front-End to process data'
+    const api = new RestApi(this, `jayteewashington-api-gateway`, {
+      restApiName: `${DEPLOY_ENVIRONMENT}-jayteewashington-api-gateway`,
+      description: `This service is used with an Angular Front-End to process data for the ${DEPLOY_ENVIRONMENT} environment`
     });
 
     // Define Lambda Integration

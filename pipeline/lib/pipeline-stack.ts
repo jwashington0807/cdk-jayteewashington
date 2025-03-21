@@ -181,7 +181,7 @@ export class PipelineStack extends Stack {
             build: {
               commands: [
                 'echo Building Angular Application...',
-                `ng build`
+                `ng build --configuration development`
               ]
             }
           },
