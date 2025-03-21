@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
 import { InfrastructureStack } from '../lib/infrastructure-stack';
-import { HostedZone } from 'aws-cdk-lib/aws-route53';
 
 const app = new cdk.App();
 

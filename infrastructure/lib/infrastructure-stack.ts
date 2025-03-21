@@ -17,9 +17,6 @@ export class InfrastructureStack extends cdk.Stack {
 
     const { DEPLOY_ENVIRONMENT, DEPLOY_DOMAIN, DEPLOY_CERT_ARN, DEPLOY_HOSTED_ZONE } = props;
 
-    // Parse JSON back into object
-    const zone = JSON.parse(DEPLOY_HOSTED_ZONE) as HostedZone;
-
     console.log(`Domain Configured - ${DEPLOY_DOMAIN}`);
     console.log(`${DEPLOY_ENVIRONMENT} environment detected. Deploying S3 Bucket`);
 
@@ -68,7 +65,9 @@ export class InfrastructureStack extends cdk.Stack {
       }
     });
 
-    console.log(`${DEPLOY_ENVIRONMENT} Creating A Record`);
+    // Retrieve the Hosted Zone from Pipeline Stack
+    const zone = HostedZone.fromHostedZoneId(this, `${DEPLOY_ENVIRONMENT}-domain-zone`, DEPLOY_HOSTED_ZONE);
+    
     // Create A Record to go to hosted zone
     const arecord = new ARecord(this, `${DEPLOY_ENVIRONMENT}-api-gateway-arecord`, {
       zone: zone,
