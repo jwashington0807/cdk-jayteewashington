@@ -17,10 +17,14 @@ const DEPLOY_CERT_ARN = process.env.DEPLOY_CERT_ARN;
 new InfrastructureStack(app, 
   `${DEPLOY_ENVIRONMENT}-Infrastructure-Stack`,
    {
-    DEPLOY_ENVIRONMENT,
-    DEPLOY_DOMAIN,
-    DEPLOY_CERT_ARN,
-    description: `Stack for the ${DEPLOY_ENVIRONMENT} infrastructure deployed using the CI Pipeline. If you need
-    to delete everything involving the ${DEPLOY_ENVIRONMENT} environment, delete this stack first, then the CI stack.`
+      env: {
+        region: process.env.CDK_DEFAULT_REGION,
+        account: process.env.CDK_DEPLOY_ACCOUNT,
+      },
+      DEPLOY_ENVIRONMENT,
+      DEPLOY_DOMAIN,
+      DEPLOY_CERT_ARN,
+      description: `Stack for the ${DEPLOY_ENVIRONMENT} infrastructure deployed using the CI Pipeline. If you need
+      to delete everything involving the ${DEPLOY_ENVIRONMENT} environment, delete this stack first, then the CI stack.`
   }
 );

@@ -16,7 +16,7 @@ export class InfrastructureStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: InfrastructureStackProps) {
     super(scope, id, props);
 
-    const { DEPLOY_ENVIRONMENT, DEPLOY_DOMAIN, DEPLOY_CERT_ARN } = props;
+    const { env, DEPLOY_ENVIRONMENT, DEPLOY_DOMAIN, DEPLOY_CERT_ARN } = props;
 
     console.log(`Domain Configured - ${DEPLOY_DOMAIN}`);
     console.log(`${DEPLOY_ENVIRONMENT} environment detected. Deploying S3 Bucket`);
