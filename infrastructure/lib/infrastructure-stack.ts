@@ -9,14 +9,16 @@ import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { BaseIam } from '../src/iam/iam-base-class';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
-import { ApiGateway } from 'aws-cdk-lib/aws-events-targets';
 import { ApiGatewayv2DomainProperties } from 'aws-cdk-lib/aws-route53-targets';
 
 export class InfrastructureStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: InfrastructureStackProps) {
     super(scope, id, props);
 
-    const { env, DEPLOY_ENVIRONMENT, DEPLOY_DOMAIN, DEPLOY_CERT_ARN } = props;
+    const { DEPLOY_ENVIRONMENT, DEPLOY_DOMAIN, DEPLOY_CERT_ARN, DEPLOY_HOSTED_ZONE } = props;
+
+    // Parse JSON back into object
+    const zone = JSON.parse(DEPLOY_HOSTED_ZONE) as HostedZone;
 
     console.log(`Domain Configured - ${DEPLOY_DOMAIN}`);
     console.log(`${DEPLOY_ENVIRONMENT} environment detected. Deploying S3 Bucket`);
@@ -65,10 +67,6 @@ export class InfrastructureStack extends cdk.Stack {
         endpointType: EndpointType.REGIONAL,
       }
     });
-
-    console.log(`${DEPLOY_ENVIRONMENT} Retrieving Hosted Zone`);
-    // Retrieve Hosted Zone
-    const zone = HostedZone.fromLookup(this, `${DEPLOY_DOMAIN}-api-gateway-hosted-zone`, { domainName: `${DEPLOY_DOMAIN}`});
 
     console.log(`${DEPLOY_ENVIRONMENT} Creating A Record`);
     // Create A Record to go to hosted zone
