@@ -3,11 +3,14 @@ import { Construct } from 'constructs';
 import { InfrastructureStackProps } from '../models/infrastructure';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { RemovalPolicy } from 'aws-cdk-lib';
-import { EndpointType, LambdaIntegration, LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
+import { EndpointType, LambdaIntegration, LambdaRestApi, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { BaseLambda } from '../src/lambda/lambda-config-base-class';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { BaseIam } from '../src/iam/iam-base-class';
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
+import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { ApiGateway } from 'aws-cdk-lib/aws-events-targets';
+import { ApiGatewayv2DomainProperties } from 'aws-cdk-lib/aws-route53-targets';
 
 export class InfrastructureStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: InfrastructureStackProps) {
@@ -62,6 +65,15 @@ export class InfrastructureStack extends cdk.Stack {
         endpointType: EndpointType.REGIONAL,
       }
     });
+
+    // Retrieve Hosted Zone
+    const zone = HostedZone.fromLookup(this, `${DEPLOY_DOMAIN}-api-gateway-hosted-zone`, { domainName: `${DEPLOY_DOMAIN}`});
+
+    // Create A Record to go to hosted zone
+    const arecord = new ARecord(this, `${DEPLOY_ENVIRONMENT}-api-gateway-arecord`, {
+      zone: zone,
+      target: RecordTarget.fromAlias(new ApiGatewayv2DomainProperties(`${DEPLOY_DOMAIN}`, zone.hostedZoneId))
+    })
 
     // Define Lambda Integration
     const processDataIntegration = new LambdaIntegration(lambdafunction);
