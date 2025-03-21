@@ -18,6 +18,7 @@ export class PipelineStack extends Stack {
   constructor(scope: Construct, id: string, props: PipelineStackProps) {
     super(scope, id, props);
 
+    //#region Props
     // Destructure the props so that we can use the individual variables in this file
     const {
       envName,
@@ -28,15 +29,15 @@ export class PipelineStack extends Stack {
       subdomain,
       angularAppRepoName,
       angularBranchName,
-      description
+      description,
+      certARN
     } = props;
 
     //#endregion
 
     //#region Github
-    // Get Github Token
-    //const ghToken = SecretValue.secretsManager('github-new-token');
 
+    // Get Github Token
     const gitHubToken = Secret.fromSecretAttributes(this, "github-token", {
       secretCompleteArn:
         "arn:aws:secretsmanager:us-east-1:700081520826:secret:github-token-UG7mOa"
@@ -131,7 +132,6 @@ export class PipelineStack extends Stack {
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
         },
         domainNames: [domainName],
-        
         certificate
       }
     );
@@ -214,6 +214,12 @@ export class PipelineStack extends Stack {
         environmentVariables: {
           DEPLOY_ENVIRONMENT: {
             value: envName
+          },
+          DEPLOY_DOMAIN: {
+            value: domainName
+          },
+          DEPLOY_CERT_ARN: {
+            value: certARN
           }
         },
         buildSpec: BuildSpec.fromObject({

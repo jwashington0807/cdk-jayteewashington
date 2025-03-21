@@ -96,14 +96,16 @@
       "subdomain": "dev.",
       "angularBranchName": "dev",
       "branch": "dev",
-      "api": ""
+      "api": "",
+      "certARN": "arn:aws:acm:us-east-1:700081520826:certificate/f33a52aa-58a8-4e68-9d3a-f0f3dd2c46e9"
     },
     "prod": {
       "env": "prod",
       "subdomain": "",
       "angularBranchName": "master",
       "branch": "master",
-      "api": ""
+      "api": "",
+      "certARN": "arn:aws:acm:us-east-1:700081520826:certificate/4552f937-de57-4dc7-a8c2-6a77f5d61698"
     }
   }
 }

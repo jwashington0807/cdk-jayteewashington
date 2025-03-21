@@ -20,6 +20,7 @@
     "typescript": "~5.6.3"
   },
   "dependencies": {
+    "@aws-cdk/aws-route53-targets": "^1.203.0",
     "aws-cdk-lib": "2.178.2",
     "constructs": "^10.0.0",
     "esbuild": "^0.25.1"
