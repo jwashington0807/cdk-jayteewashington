@@ -66,8 +66,8 @@ export class InfrastructureStack extends cdk.Stack {
     });
 
     // Retrieve the Hosted Zone from Pipeline Stack
-    const zone = HostedZone.fromHostedZoneId(this, `${DEPLOY_ENVIRONMENT}-domain-zone`, DEPLOY_HOSTED_ZONE);
-    
+    const zone = HostedZone.fromHostedZoneAttributes(this, `jayteewashingtonZone`, { hostedZoneId: DEPLOY_HOSTED_ZONE, zoneName: DEPLOY_DOMAIN });
+
     // Create A Record to go to hosted zone
     const arecord = new ARecord(this, `${DEPLOY_ENVIRONMENT}-api-gateway-arecord`, {
       zone: zone,

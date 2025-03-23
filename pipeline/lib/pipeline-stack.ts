@@ -227,6 +227,10 @@ export class PipelineStack extends Stack {
         },
         buildSpec: BuildSpec.fromObject({
           version: '0.2',
+          env: {
+            account: process.env.CDK_DEFAULT_ACCOUNT,
+            region: process.env.CDK_DEFAULT_REGION
+          },
           phases: {
             install: {
               'runtime-versions': {
