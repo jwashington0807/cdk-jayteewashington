@@ -67,15 +67,6 @@ export class InfrastructureStack extends cdk.Stack {
       description: `This service is used with an Angular Front-End to process data for the ${DEPLOY_ENVIRONMENT} environment`,
       defaultCorsPreflightOptions: {
         allowOrigins: ['http://localhost:4200'],
-      },
-      domainName: {
-        domainName: `${DEPLOY_DOMAIN}`,
-        certificate: Certificate.fromCertificateArn(
-          this,
-          "SSLCert",
-          `${DEPLOY_CERT_ARN}`
-        ),
-        endpointType: EndpointType.REGIONAL,
       }
     });
 
