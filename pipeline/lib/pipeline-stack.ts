@@ -11,8 +11,10 @@ import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3BucketOrigin} from 'aws-cdk-lib/aws-cloudfront-origins';
-import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
+import { ApiGatewayDomain, CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
+import { Domain } from 'domain';
+import { DkimSigningAttributesFilterSensitiveLog } from '@aws-sdk/client-sesv2';
 
 export class PipelineStack extends Stack {
   constructor(scope: Construct, id: string, props: PipelineStackProps) {
