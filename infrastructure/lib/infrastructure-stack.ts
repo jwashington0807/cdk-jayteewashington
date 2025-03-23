@@ -105,11 +105,21 @@ export class InfrastructureStack extends cdk.Stack {
       restApi: api
     });
 
-    new CnameRecord(this, `${DEPLOY_ENVIRONMENT}-api-gateway-record-set`, {
+    // Creation of Records
+    const arecord = new ARecord(
+      this,
+      'ARecord',
+      {
+        zone: hostedZone,
+        target: RecordTarget.fromAlias(new ApiGatewayv2DomainProperties(apidomainName.domainName, hostedZone.hostedZoneId))
+      }
+    )
+
+    /*new CnameRecord(this, `${DEPLOY_ENVIRONMENT}-api-gateway-record-set`, {
       zone: hostedZone,
       recordName: 'api',
       domainName: apidomainName.domainNameAliasDomainName
-    });
+    });*/
 
     //#endregion
 
