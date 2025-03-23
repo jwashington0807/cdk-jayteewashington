@@ -1,7 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { PipelineStackProps } from '../models/pipeline';
-import { RemovalPolicy, SecretValue, Stack } from 'aws-cdk-lib';
+import { RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { CompositePrincipal, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
@@ -13,8 +13,6 @@ import { Distribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cd
 import { S3BucketOrigin} from 'aws-cdk-lib/aws-cloudfront-origins';
 import { ApiGatewayDomain, CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
-import { Domain } from 'domain';
-import { DkimSigningAttributesFilterSensitiveLog } from '@aws-sdk/client-sesv2';
 
 export class PipelineStack extends Stack {
   constructor(scope: Construct, id: string, props: PipelineStackProps) {

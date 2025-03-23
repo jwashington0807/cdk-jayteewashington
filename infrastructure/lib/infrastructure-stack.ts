@@ -7,7 +7,7 @@ import { BasePathMapping, DomainName, EndpointType, LambdaIntegration, LambdaRes
 import { BaseLambda } from '../src/lambda/lambda-config-base-class';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { BaseIam } from '../src/iam/iam-base-class';
-import { Certificate } from 'aws-cdk-lib/aws-certificatemanager';
+import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { ARecord, CnameRecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { ApiGatewayv2DomainProperties } from 'aws-cdk-lib/aws-route53-targets';
 
@@ -70,10 +70,32 @@ export class InfrastructureStack extends cdk.Stack {
       }
     });
 
+    // concat the domain name. If prod, the subdomain will be blank. Taken from the cdk.json file
+    const domainName = `api.${DEPLOY_DOMAIN}`;
+
+    // creating a hosted zone for the certificate and other items needed for this application
+    const hostedZone = new HostedZone(
+      this,
+      "APIHostedZone",
+      {
+        zoneName: domainName
+      }
+    );
+
+    // Creating SSL certificate
+    const certificate = new Certificate(
+      this,
+      "SSLAPICert",
+      {
+        domainName,
+        validation: CertificateValidation.fromDns(hostedZone)
+      }
+    )
+
     // Configure new custom URL for API calls
     const apidomainName = new DomainName(this, `${DEPLOY_ENVIRONMENT}-api-gateway-domain`, {
       domainName: `api.${DEPLOY_DOMAIN}`,
-      certificate: Certificate.fromCertificateArn(this, "SSLCert", `${DEPLOY_CERT_ARN}`),
+      certificate: certificate,
       endpointType: EndpointType.EDGE
     });
 
@@ -83,11 +105,8 @@ export class InfrastructureStack extends cdk.Stack {
       restApi: api
     });
 
-    // Retrieve the Hosted Zone from Pipeline Stack
-    const zone = HostedZone.fromHostedZoneAttributes(this, `jayteewashingtonZone`, { hostedZoneId: DEPLOY_HOSTED_ZONE, zoneName: DEPLOY_DOMAIN });
-
     new CnameRecord(this, `${DEPLOY_ENVIRONMENT}-api-gateway-record-set`, {
-      zone: zone,
+      zone: hostedZone,
       recordName: 'api',
       domainName: apidomainName.domainNameAliasDomainName
     });
