@@ -8,10 +8,9 @@ import { BaseLambda } from '../src/lambda/lambda-config-base-class';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { BaseIam } from '../src/iam/iam-base-class';
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
-import { ARecord, CnameRecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
-import { ApiGatewayv2DomainProperties } from 'aws-cdk-lib/aws-route53-targets';
-import { TLSSecurityPolicy } from 'aws-cdk-lib/aws-opensearchservice';
-import { Domain } from 'domain';
+import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { ApiGateway } from 'aws-cdk-lib/aws-events-targets';
+import * as targets from '@aws-cdk/aws-route53-targets';
 
 export class InfrastructureStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: InfrastructureStackProps) {
@@ -158,16 +157,16 @@ export class InfrastructureStack extends cdk.Stack {
     });
 
     // Creation of AUTHORITATIVE Record
-    const arecord = new ARecord(
+    /*const arecord = new ARecord(
       this,
       'AapiRecord',
       {
         recordName: apiDomain,
         region: 'us-east-1',
         zone: hostedZone,
-        target: RecordTarget.fromAlias(new ApiGatewayv2DomainProperties(apiDomain, hostedZone.hostedZoneId))
+        target: RecordTarget.fromAlias(new targets.ApiGateway(api))
       }
-    )
+    )*/
 
     //#endregion
 
