@@ -217,12 +217,6 @@ export class PipelineStack extends Stack {
           },
           DEPLOY_DOMAIN: {
             value: domainName
-          },
-          DEPLOY_CERT_ARN: {
-            value: certARN
-          },
-          DEPLOY_HOSTED_ZONE: {
-            value: hostedZone.hostedZoneId
           }
         },
         buildSpec: BuildSpec.fromObject({

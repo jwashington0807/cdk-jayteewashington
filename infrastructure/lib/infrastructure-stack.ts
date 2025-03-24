@@ -17,7 +17,7 @@ export class InfrastructureStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: InfrastructureStackProps) {
     super(scope, id, props);
 
-    const { DEPLOY_ENVIRONMENT, DEPLOY_DOMAIN, DEPLOY_CERT_ARN, DEPLOY_HOSTED_ZONE } = props;
+    const { DEPLOY_ENVIRONMENT, DEPLOY_DOMAIN, HOSTED_ZONE_ID } = props;
 
     //#region Parameters
 
@@ -92,7 +92,7 @@ export class InfrastructureStack extends cdk.Stack {
     });
 
     // Lookup hosted zone for the certificate
-    const hostedZone = HostedZone.fromHostedZoneAttributes(this, 'APIHostedZone', {zoneName: 'jayteewashington.com', hostedZoneId: DEPLOY_HOSTED_ZONE});
+    const hostedZone = HostedZone.fromHostedZoneAttributes(this, 'APIHostedZone', {zoneName: 'jayteewashington.com', hostedZoneId: HOSTED_ZONE_ID});
     /*const hostedZone = new HostedZone(
       this,
       "HostedZone",
