@@ -91,23 +91,25 @@ export class InfrastructureStack extends cdk.Stack {
       }
     });
 
-    // Lookup hosted zone for the certificate
-    const hostedZone = HostedZone.fromHostedZoneAttributes(this, 'APIHostedZone', {zoneName: 'jayteewashington.com', hostedZoneId: HOSTED_ZONE_ID});
-    /*const hostedZone = new HostedZone(
+    // Lookup PROD hosted zone for the certificate
+    const prodhostedZone = HostedZone.fromHostedZoneAttributes(this, 'APIHostedZone', {zoneName: 'jayteewashington.com', hostedZoneId: HOSTED_ZONE_ID});
+
+    // Create Hosted Zone for the API URL
+    const hostedZone = new HostedZone(
       this,
       "HostedZone",
       {
         zoneName: apiDomain
       }
-    );*/
+    );
 
-    // Creating SSL certificate
+    // Creating SSL certificate from PROD and attach to API
     const certificate = new Certificate(
       this,
       "SSLAPICert",
       {
         domainName: apiDomain,
-        validation: CertificateValidation.fromDns(hostedZone),
+        validation: CertificateValidation.fromDns(prodhostedZone),
         // I will need to manually add a CNAME to the DNS during 1st deployment if it doesn't do it for me
 
             /*new CnameRecord(this, `${DEPLOY_ENVIRONMENT}-api-gateway-record-set`, {
@@ -118,7 +120,6 @@ export class InfrastructureStack extends cdk.Stack {
       }
     )
 
-    // Need to manually create a NS record for the api url in the prod hosted zone
     // It will pause here in deployment until Validation is complete
 
     // Configure Custom Domain for API Gateway
@@ -156,7 +157,7 @@ export class InfrastructureStack extends cdk.Stack {
     });
 
     // Creation of AUTHORITATIVE Record
-    /*const arecord = new ARecord(
+    const arecord = new ARecord(
       this,
       'AapiRecord',
       {
@@ -165,7 +166,7 @@ export class InfrastructureStack extends cdk.Stack {
         zone: hostedZone,
         target: RecordTarget.fromAlias(new ApiGatewayv2DomainProperties(apiDomain, hostedZone.hostedZoneId))
       }
-    )*/
+    )
 
     //#endregion
 
