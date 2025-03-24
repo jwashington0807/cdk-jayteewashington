@@ -3,13 +3,15 @@ import { Construct } from 'constructs';
 import { InfrastructureStackProps } from '../models/infrastructure';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { RemovalPolicy } from 'aws-cdk-lib';
-import { BasePathMapping, DomainName, EndpointType, LambdaIntegration, LambdaRestApi, RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { ApiKey, BasePathMapping, DomainName, EndpointType, LambdaIntegration, LambdaRestApi, Stage, UsagePlan } from 'aws-cdk-lib/aws-apigateway';
 import { BaseLambda } from '../src/lambda/lambda-config-base-class';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { BaseIam } from '../src/iam/iam-base-class';
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { ARecord, CnameRecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { ApiGatewayv2DomainProperties } from 'aws-cdk-lib/aws-route53-targets';
+import { TLSSecurityPolicy } from 'aws-cdk-lib/aws-opensearchservice';
+import { Domain } from 'domain';
 
 export class InfrastructureStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: InfrastructureStackProps) {
@@ -17,8 +19,24 @@ export class InfrastructureStack extends cdk.Stack {
 
     const { DEPLOY_ENVIRONMENT, DEPLOY_DOMAIN, DEPLOY_CERT_ARN, DEPLOY_HOSTED_ZONE } = props;
 
+    //#region Parameters
+
+    const apiDomain: string = 'api.jayteewashington.com';
+
+    /*if(DEPLOY_ENVIRONMENT == 'dev') {
+      apiDomain = 'api.jayteewashington.com';
+    }
+    else if(DEPLOY_ENVIRONMENT == 'prod') {
+      apiDomain = 'api.jayteewashington.com';
+    }
+    else {
+      apiDomain = 'api.jayteewashington.com';
+    }*/
+
     console.log(`Domain Configured - ${DEPLOY_DOMAIN}`);
-    console.log(`${DEPLOY_ENVIRONMENT} environment detected. Deploying S3 Bucket`);
+    console.log(`${DEPLOY_ENVIRONMENT} environment detected`);
+
+    //#endregion
 
     //#region S3
 
@@ -67,37 +85,69 @@ export class InfrastructureStack extends cdk.Stack {
       description: `This service is used with an Angular Front-End to process data for the ${DEPLOY_ENVIRONMENT} environment`,
       defaultCorsPreflightOptions: {
         allowOrigins: ['http://localhost:4200'],
+      },
+      deployOptions: {
+        stageName: DEPLOY_ENVIRONMENT
       }
     });
 
-    // concat the domain name. If prod, the subdomain will be blank. Taken from the cdk.json file
-    const domainName = `api.${DEPLOY_DOMAIN}`;
-
-    // creating a hosted zone for the certificate and other items needed for this application
-    const hostedZone = new HostedZone(
+    // Lookup hosted zone for the certificate
+    const hostedZone = HostedZone.fromHostedZoneAttributes(this, 'APIHostedZone', {zoneName: 'jayteewashington.com', hostedZoneId: DEPLOY_HOSTED_ZONE});
+    /*const hostedZone = new HostedZone(
       this,
-      "APIHostedZone",
+      "HostedZone",
       {
-        zoneName: domainName
+        zoneName: apiDomain
       }
-    );
+    );*/
 
     // Creating SSL certificate
     const certificate = new Certificate(
       this,
       "SSLAPICert",
       {
-        domainName,
-        validation: CertificateValidation.fromDns(hostedZone)
+        domainName: apiDomain,
+        validation: CertificateValidation.fromDns(hostedZone),
+        // I will need to manually add a CNAME to the DNS during 1st deployment if it doesn't do it for me
+
+            /*new CnameRecord(this, `${DEPLOY_ENVIRONMENT}-api-gateway-record-set`, {
+              zone: hostedZone,
+              recordName: 'api',
+              domainName: apiDomain
+            });*/
       }
     )
 
-    // Configure new custom URL for API calls
+    // Need to manually create a NS record for the api url in the prod hosted zone
+    // It will pause here in deployment until Validation is complete
+
+    // Configure Custom Domain for API Gateway
     const apidomainName = new DomainName(this, `${DEPLOY_ENVIRONMENT}-api-gateway-domain`, {
-      domainName: `api.${DEPLOY_DOMAIN}`,
+      domainName: apiDomain,
       certificate: certificate,
-      endpointType: EndpointType.EDGE
+      endpointType: EndpointType.REGIONAL
     });
+
+    const plan = new UsagePlan(this, 'MyUsagePlan', {
+      apiStages: [
+        {
+          api: api,
+            stage: api.deploymentStage,
+          },
+      ],
+    });
+    
+    const key = new ApiKey(this, 'MyApiKey', {
+      description: 'API key'
+    });
+    
+    plan.addApiKey(key);
+
+    /*const apidomainName = DomainName.fromDomainNameAttributes(this, 'domain-name', {
+      domainName: 'jayteewashington.com',
+      domainNameAliasTarget: apiDomain,
+      domainNameAliasHostedZoneId: hostedZone.hostedZoneId
+    });*/
 
     // Associate the Custom domain that we created with new APIGateway using BasePathMapping:
     new BasePathMapping(this, `${DEPLOY_ENVIRONMENT}-api-gateway-mapping`, {
@@ -105,21 +155,17 @@ export class InfrastructureStack extends cdk.Stack {
       restApi: api
     });
 
-    // Creation of Records
-    const arecord = new ARecord(
+    // Creation of AUTHORITATIVE Record
+    /*const arecord = new ARecord(
       this,
-      'ARecord',
+      'AapiRecord',
       {
+        recordName: apiDomain,
+        region: 'us-east-1',
         zone: hostedZone,
-        target: RecordTarget.fromAlias(new ApiGatewayv2DomainProperties(apidomainName.domainName, hostedZone.hostedZoneId))
+        target: RecordTarget.fromAlias(new ApiGatewayv2DomainProperties(apiDomain, hostedZone.hostedZoneId))
       }
-    )
-
-    /*new CnameRecord(this, `${DEPLOY_ENVIRONMENT}-api-gateway-record-set`, {
-      zone: hostedZone,
-      recordName: 'api',
-      domainName: apidomainName.domainNameAliasDomainName
-    });*/
+    )*/
 
     //#endregion
 
