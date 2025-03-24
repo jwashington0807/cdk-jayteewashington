@@ -40,5 +40,8 @@ export const handler = async (event: IEmailEvent) => {
 
         const command = new SendEmailCommand(input);
         await client.send(command);
+
     }
+
+    return {statusCode: 200, body: "OK"};
 }

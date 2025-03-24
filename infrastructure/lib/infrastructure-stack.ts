@@ -22,16 +22,6 @@ export class InfrastructureStack extends cdk.Stack {
 
     const apiDomain: string = 'api.jayteewashington.com';
 
-    /*if(DEPLOY_ENVIRONMENT == 'dev') {
-      apiDomain = 'api.jayteewashington.com';
-    }
-    else if(DEPLOY_ENVIRONMENT == 'prod') {
-      apiDomain = 'api.jayteewashington.com';
-    }
-    else {
-      apiDomain = 'api.jayteewashington.com';
-    }*/
-
     console.log(`Domain Configured - ${DEPLOY_DOMAIN}`);
     console.log(`${DEPLOY_ENVIRONMENT} environment detected`);
 
@@ -95,13 +85,13 @@ export class InfrastructureStack extends cdk.Stack {
     const prodhostedZone = HostedZone.fromHostedZoneAttributes(this, 'APIHostedZone', {zoneName: 'jayteewashington.com', hostedZoneId: HOSTED_ZONE_ID});
 
     // Create Hosted Zone for the API URL
-    const hostedZone = new HostedZone(
+    /*const hostedZone = new HostedZone(
       this,
-      "HostedZone",
+      "HostedAPIZone",
       {
         zoneName: apiDomain
       }
-    );
+    );*/
 
     // Creating SSL certificate from PROD and attach to API
     const certificate = new Certificate(
