@@ -49,5 +49,6 @@ export const handler = async (event: IEmailEvent) => {
         headers: {
             "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
         },
-        body: "OK"};
+        body: JSON.stringify("OK")
+    };
 }
