@@ -15,4 +15,4 @@ export class BaseLambda extends NodejsFunction {
             timeout: Duration.seconds(60)
         });
     }
-}
+};
