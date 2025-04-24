@@ -3,7 +3,7 @@ import { Construct } from 'constructs';
 import { InfrastructureStackProps } from '../models/infrastructure';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { RemovalPolicy } from 'aws-cdk-lib';
-import { ApiKey, BasePathMapping, DomainName, EndpointType, LambdaIntegration, LambdaRestApi, Stage, UsagePlan } from 'aws-cdk-lib/aws-apigateway';
+import { ApiKey, BasePathMapping, Cors, DomainName, EndpointType, LambdaIntegration, LambdaRestApi, Stage, UsagePlan } from 'aws-cdk-lib/aws-apigateway';
 import { BaseLambda } from '../src/lambda/lambda-config-base-class';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { BaseIam } from '../src/iam/iam-base-class';
@@ -80,7 +80,7 @@ export class InfrastructureStack extends cdk.Stack {
       description: `This service is used with an Angular Front-End to process data for the ${DEPLOY_ENVIRONMENT} environment`,
       endpointConfiguration: { types: [ EndpointType.REGIONAL ] },
       defaultCorsPreflightOptions: {
-        allowOrigins: ['*'],
+        allowOrigins: Cors.ALL_ORIGINS,
       },
       deployOptions: {
         stageName: DEPLOY_ENVIRONMENT

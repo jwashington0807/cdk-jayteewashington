@@ -5,6 +5,7 @@ import { IEmailEvent } from '../../models/ses';
 let client: SESv2Client;
 
 export const handler = async (event: IEmailEvent) => {
+
     if(!client) {
         client = new SESv2Client({});
 
@@ -43,5 +44,10 @@ export const handler = async (event: IEmailEvent) => {
 
     }
 
-    return {statusCode: 200, body: "OK"};
+    return {
+        statusCode: 200, 
+        headers: {
+            "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
+        },
+        body: "OK"};
 }
