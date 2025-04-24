@@ -55,11 +55,16 @@ export class InfrastructureStack extends cdk.Stack {
     
     //#region Lambdas
 
-    // Define Lambda Function
+    // Define Lambda Functions
     const lambdafunction = new BaseLambda(this, `jayteewashington-email-lambda`, {
       entry: 'src/lambda/emailnotification.ts',
       name: `${DEPLOY_ENVIRONMENT}-jayteewashington-contact-email`,
       roles: emailLambdaRole
+    });
+
+    const testfunction = new BaseLambda(this, `jayteewashington-test-lambda`, {
+      entry: 'src/lambda/test.ts',
+      name: `${DEPLOY_ENVIRONMENT}-jayteewashington-test-lambda`
     });
 
     //#endregion
@@ -74,7 +79,7 @@ export class InfrastructureStack extends cdk.Stack {
       description: `This service is used with an Angular Front-End to process data for the ${DEPLOY_ENVIRONMENT} environment`,
       endpointConfiguration: { types: [ EndpointType.REGIONAL ] },
       defaultCorsPreflightOptions: {
-        allowOrigins: ['http://localhost:4200'],
+        allowOrigins: ['*'],
       },
       deployOptions: {
         stageName: DEPLOY_ENVIRONMENT
@@ -83,15 +88,6 @@ export class InfrastructureStack extends cdk.Stack {
 
     // Lookup PROD hosted zone for the certificate
     const prodhostedZone = HostedZone.fromHostedZoneAttributes(this, 'APIHostedZone', {zoneName: 'jayteewashington.com', hostedZoneId: HOSTED_ZONE_ID});
-
-    // Create Hosted Zone for the API URL
-    /*const hostedZone = new HostedZone(
-      this,
-      "HostedAPIZone",
-      {
-        zoneName: apiDomain
-      }
-    );*/
 
     // Creating SSL certificate from PROD and attach to API
     const certificate = new Certificate(
@@ -134,37 +130,23 @@ export class InfrastructureStack extends cdk.Stack {
     
     plan.addApiKey(key);
 
-    /*const apidomainName = DomainName.fromDomainNameAttributes(this, 'domain-name', {
-      domainName: 'jayteewashington.com',
-      domainNameAliasTarget: apiDomain,
-      domainNameAliasHostedZoneId: hostedZone.hostedZoneId
-    });*/
-
     // Associate the Custom domain that we created with new APIGateway using BasePathMapping:
     new BasePathMapping(this, `${DEPLOY_ENVIRONMENT}-api-gateway-mapping`, {
       domainName: apidomainName,
       restApi: api
     });
 
-    // Creation of AUTHORITATIVE Record
-    /*const arecord = new ARecord(
-      this,
-      'AapiRecord',
-      {
-        recordName: apiDomain,
-        region: 'us-east-1',
-        zone: hostedZone,
-        target: RecordTarget.fromAlias(new targets.ApiGateway(api))
-      }
-    )*/
-
     //#endregion
 
-    //#region Construct Integration
+    //#region Construct Integration and API Resources
     console.log(`${DEPLOY_ENVIRONMENT} Creating Lambda Integration`);
+
     // Define Lambda Integration
-    const processDataIntegration = new LambdaIntegration(lambdafunction);
-    api.root.addResource('email').addMethod('POST', processDataIntegration);
+    const contactEmailIntegration = new LambdaIntegration(lambdafunction);
+    const testDataIntegration = new LambdaIntegration(testfunction);
+
+    api.root.addResource('email').addMethod('POST', contactEmailIntegration);
+    api.root.addResource('test').addMethod('GET', testDataIntegration);
 
     //#endregion
   }
