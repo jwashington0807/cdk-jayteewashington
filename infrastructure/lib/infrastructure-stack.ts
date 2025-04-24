@@ -78,10 +78,7 @@ export class InfrastructureStack extends cdk.Stack {
       proxy: false,
       restApiName: `${DEPLOY_ENVIRONMENT}-jayteewashington-api-gateway`,
       description: `This service is used with an Angular Front-End to process data for the ${DEPLOY_ENVIRONMENT} environment`,
-      endpointConfiguration: { types: [ EndpointType.REGIONAL ] },
-      defaultCorsPreflightOptions: {
-        allowOrigins: Cors.ALL_ORIGINS,
-      },
+      //endpointConfiguration: { types: [ EndpointType.REGIONAL ] },
       deployOptions: {
         stageName: DEPLOY_ENVIRONMENT
       }
@@ -106,8 +103,6 @@ export class InfrastructureStack extends cdk.Stack {
             });*/
       }
     )
-
-    // It will pause here in deployment until Validation is complete
 
     // Configure Custom Domain for API Gateway
     const apidomainName = new DomainName(this, `${DEPLOY_ENVIRONMENT}-api-gateway-domain`, {
@@ -136,6 +131,14 @@ export class InfrastructureStack extends cdk.Stack {
       domainName: apidomainName,
       restApi: api
     });
+
+    //CORS
+    api.root.addCorsPreflight({
+      allowOrigins: ['https://' + DEPLOY_DOMAIN],
+      allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowHeaders: ['Content-Type', 'Authorization', 'X-Amz-Date', 'X-Api-Key', 'X-Amz-Security-Token', 'X-Amz-User-Agent'],
+      allowCredentials: true,
+    })
 
     //#endregion
 
