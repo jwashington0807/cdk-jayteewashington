@@ -21,7 +21,7 @@ export class InfrastructureStack extends cdk.Stack {
     //#region Parameters
 
     const apiDomain: string = 'api.jayteewashington.com';
-    const apistage: string = DEPLOY_DOMAIN == 'dev' ? 'v1' : 'v2';
+    const apistage: string = DEPLOY_ENVIRONMENT == 'dev' ? 'v1' : 'v2';
 
     console.log(`Domain Configured - ${DEPLOY_DOMAIN}`);
     console.log(`${DEPLOY_ENVIRONMENT} environment detected`);
@@ -146,8 +146,9 @@ export class InfrastructureStack extends cdk.Stack {
     const contactEmailIntegration = new LambdaIntegration(lambdafunction);
     const testDataIntegration = new LambdaIntegration(testfunction);
 
-    api.root.addResource('email').addResource(apistage).addMethod('POST', contactEmailIntegration);
-    api.root.addResource('test').addResource(apistage).addMethod('GET', testDataIntegration);
+    const versionStage = api.root.addResource(apistage);
+    versionStage.addResource('email').addMethod('POST', contactEmailIntegration);
+    versionStage.addResource('test').addMethod('GET', testDataIntegration);
 
     //#endregion
   }
