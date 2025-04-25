@@ -78,12 +78,12 @@ export class InfrastructureStack extends cdk.Stack {
       proxy: false,
       restApiName: `${DEPLOY_ENVIRONMENT}-jayteewashington-api-gateway`,
       description: `This service is used with an Angular Front-End to process data for the ${DEPLOY_ENVIRONMENT} environment`,
-      //endpointConfiguration: { types: [ EndpointType.REGIONAL ] },
+      endpointConfiguration: { types: [ EndpointType.REGIONAL ] },
       deployOptions: {
         stageName: DEPLOY_ENVIRONMENT
       },
       defaultCorsPreflightOptions: {
-        allowOrigins: ['https://' + DEPLOY_DOMAIN],
+        allowOrigins: ['*'],//['https://' + DEPLOY_DOMAIN],
         allowMethods: ['GET', 'POST', 'OPTIONS'],
         allowHeaders: ['Content-Type', 'Authorization']
       }

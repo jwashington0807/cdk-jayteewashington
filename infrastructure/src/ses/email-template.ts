@@ -14,8 +14,8 @@ export const EmailTemplate = (email: IEmailEvent) => {
         <body>
         Hello Test <br>
         Name: ${email.name} <br>
-        Name: ${email.email} <br>
-        Name: ${email.comments} <br>
+        Email: ${email.email} <br>
+        Comments: ${email.comments} <br>
         </body>
     </html>`;
 }

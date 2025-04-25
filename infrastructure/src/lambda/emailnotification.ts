@@ -43,23 +43,22 @@ export const handler = async (event: IEmailEvent) => {
 
         return {
             statusCode: 200, 
+            isBase64Encoded: false,
             headers: {
-                "Access-Control-Allow-Origin" : event.origin, // Required for CORS support to work
+                "Access-Control-Allow-Origin" : '*', // Required for CORS support to work
             },
-            body: JSON.stringify(response)
+            body: JSON.stringify('Success')
         };
     }
     catch (error) {
         
         return {
             statusCode: 503,
+            isBase64Encoded: false,
             headers: {
-                "Access-Control-Allow-Origin" : event.origin, // Required for CORS support to work
+                "Access-Control-Allow-Origin" : '*', // Required for CORS support to work
             },
             body: JSON.stringify(error)
         };
-    }
-    finally {
-        // Finally 
     }
 }
