@@ -9,6 +9,7 @@ export interface UserEmail {
 
 export interface IEmailEvent extends UserEmail {
     reciever: string;
+    origin: string;
 }
 
 

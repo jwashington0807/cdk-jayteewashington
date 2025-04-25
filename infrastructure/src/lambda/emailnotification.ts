@@ -28,7 +28,8 @@ export const handler = async (event: IEmailEvent) => {
                                 name: event.name,
                                 comments: event.comments,
                                 email: event.email,
-                                reciever: 'jaytee.washington@gmail.com'
+                                reciever: 'jaytee.washington@gmail.com',
+                                origin: event.origin
                             }
                         )
                     }
@@ -43,7 +44,7 @@ export const handler = async (event: IEmailEvent) => {
         return {
             statusCode: 200, 
             headers: {
-                "Access-Control-Allow-Origin" : "*", // Required for CORS support to work
+                "Access-Control-Allow-Origin" : event.origin, // Required for CORS support to work
             },
             body: JSON.stringify(response)
         };
@@ -52,6 +53,9 @@ export const handler = async (event: IEmailEvent) => {
         
         return {
             statusCode: 503,
+            headers: {
+                "Access-Control-Allow-Origin" : event.origin, // Required for CORS support to work
+            },
             body: JSON.stringify(error)
         };
     }
