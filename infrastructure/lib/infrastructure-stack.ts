@@ -81,6 +81,11 @@ export class InfrastructureStack extends cdk.Stack {
       //endpointConfiguration: { types: [ EndpointType.REGIONAL ] },
       deployOptions: {
         stageName: DEPLOY_ENVIRONMENT
+      },
+      defaultCorsPreflightOptions: {
+        allowOrigins: ['https://' + DEPLOY_DOMAIN],
+        allowMethods: ['GET', 'POST', 'OPTIONS'],
+        allowHeaders: ['Content-Type', 'Authorization']
       }
     });
 
@@ -131,14 +136,6 @@ export class InfrastructureStack extends cdk.Stack {
       domainName: apidomainName,
       restApi: api
     });
-
-    //CORS
-    api.root.addCorsPreflight({
-      allowOrigins: ['https://' + DEPLOY_DOMAIN],
-      allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowHeaders: ['Content-Type', 'Authorization', 'X-Amz-Date', 'X-Api-Key', 'X-Amz-Security-Token', 'X-Amz-User-Agent'],
-      allowCredentials: true,
-    })
 
     //#endregion
 
