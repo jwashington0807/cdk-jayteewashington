@@ -174,7 +174,7 @@ export class PipelineStack extends Stack {
                 nodejs: '20.x'
               },
               commands: [
-                'npm install',
+                'npm install --legacy-peer-deps',
                 'npm install -g @angular/cli'
               ]
             },
