@@ -87,21 +87,21 @@
     "domainzoneid": "Z0129507P31AKAF5UMS6",
     "staging": {
       "env": "staging",
-      "origin": "localhost",
+      "origin": "http://localhost",
       "api": "",
-      "email": "jayteewashington@gmail.com"
+      "email": "jaytee.washington@gmail.com"
     },
     "dev": {
       "env": "dev",
-      "origin": "dev.jayteewashington.com",
+      "origin": "https://dev.jayteewashington.com",
       "api": "api.jayteewashington.com",
-      "email": "jayteewashington@gmail.com"
+      "email": "jaytee.washington@gmail.com"
     },
     "prod": {
       "env": "prod",
-      "origin": "jayteewashington.com",
+      "origin": "https://jayteewashington.com",
       "api": "api.jayteewashington.com",
-      "email": "jayteewashington@gmail.com"
+      "email": "jaytee.washington@gmail.com"
     }
   }
 }

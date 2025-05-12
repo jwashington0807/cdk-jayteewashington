@@ -5,7 +5,6 @@ export type UserEmail = {
     name: string;
     comments: string;
     reciever: string;
-    origin: string;
 }
 
 export interface BaseRoleProps extends RoleProps {

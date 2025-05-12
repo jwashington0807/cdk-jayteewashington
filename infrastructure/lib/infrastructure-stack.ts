@@ -14,7 +14,7 @@ export class InfrastructureStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: InfrastructureStackProps) {
     super(scope, id, props);
 
-    const { DEPLOY_ENVIRONMENT, DEPLOY_DOMAIN, HOSTED_ZONE_ID } = props;
+    const { DEPLOY_ENVIRONMENT, HOSTED_ZONE_ID } = props;
 
     //#region Parameters
 
@@ -25,7 +25,7 @@ export class InfrastructureStack extends cdk.Stack {
     const apiDomain: string = env.api;
     const apistage: string = DEPLOY_ENVIRONMENT == 'dev' ? 'v1' : 'v2';
 
-    console.log(`Domain Configured - ${DEPLOY_DOMAIN}`);
+    console.log(`Domain Configured - ${env.origin}`);
     console.log(`${DEPLOY_ENVIRONMENT} environment detected`);
 
     //#endregion

@@ -2,8 +2,6 @@ import { SendEmailCommand, SESv2Client } from '@aws-sdk/client-sesv2';
 import { EmailTemplate } from '../ses/email-template';
 import { UserEmail } from '../../models/ses';
 import { Handler, Context } from 'aws-lambda';
-import { User } from 'aws-cdk-lib/aws-iam';
-import { getEnvironmentData } from 'worker_threads';
 
 // Set the AWS Region.
 const REGION = "us-east-1";
@@ -12,11 +10,13 @@ const ses = new SESv2Client({ region: REGION });
 
 export const handler: Handler = async (event, context: Context) => {
 
+    // Get Environment Variables
+    const emailTo = process.env.URLTO as string;
+    const originURL = process.env.ORIGIN as string;
+    
     try {
         // Parse JSON Body
         const body = JSON.parse(event.body) as UserEmail;
-        const emailTo = process.env.URLTO as string;
-        const originURL = process.env.ORIGIN as string;
 
         // Construct Email Specs
         const command = new SendEmailCommand({
@@ -37,8 +37,7 @@ export const handler: Handler = async (event, context: Context) => {
                                     name: body.name,
                                     comments: body.comments,
                                     email: body.email,
-                                    reciever: emailTo,
-                                    origin: body.origin
+                                    reciever: emailTo
                                 }
                             )
                         }
@@ -66,7 +65,7 @@ export const handler: Handler = async (event, context: Context) => {
         return {
             statusCode: 500,
             headers: {
-                "Access-Control-Allow-Origin" : '*', // Required for CORS support to work
+                "Access-Control-Allow-Origin" : originURL, // Required for CORS support to work
                 "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
                 "Access-Control-Allow-Headers": "Content-Type, Authorization",
             },

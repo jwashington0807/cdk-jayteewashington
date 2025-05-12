@@ -214,9 +214,6 @@ export class PipelineStack extends Stack {
         environmentVariables: {
           DEPLOY_ENVIRONMENT: {
             value: envName
-          },
-          DEPLOY_DOMAIN: {
-            value: domainName
           }
         },
         buildSpec: BuildSpec.fromObject({
