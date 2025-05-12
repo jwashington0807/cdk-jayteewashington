@@ -1,6 +1,6 @@
-import { IEmailEvent } from "../../models/ses";
+import { UserEmail } from "../../models/ses";
 
-export const EmailTemplate = (email: IEmailEvent) => {
+export const EmailTemplate = (email: UserEmail) => {
     return `
     <!DOCTYPE html>
     <html lang="en">

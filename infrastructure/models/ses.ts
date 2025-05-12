@@ -1,17 +1,12 @@
 import { RoleProps, ServicePrincipal } from "aws-cdk-lib/aws-iam";
 
-export interface UserEmail {
-    id: string;
+export type UserEmail = {
     email: string;
     name: string;
     comments: string;
-}
-
-export interface IEmailEvent extends UserEmail {
     reciever: string;
     origin: string;
 }
-
 
 export interface BaseRoleProps extends RoleProps {
     roleName: string;

@@ -3,14 +3,12 @@ import { Construct } from 'constructs';
 import { InfrastructureStackProps } from '../models/infrastructure';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { RemovalPolicy } from 'aws-cdk-lib';
-import { ApiKey, BasePathMapping, Cors, DomainName, EndpointType, LambdaIntegration, LambdaRestApi, Stage, UsagePlan } from 'aws-cdk-lib/aws-apigateway';
+import { ApiKey, BasePathMapping, Cors, DomainName, EndpointType, LambdaIntegration, LambdaRestApi, RestApi, Stage, UsagePlan } from 'aws-cdk-lib/aws-apigateway';
 import { BaseLambda } from '../src/lambda/lambda-config-base-class';
 import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { BaseIam } from '../src/iam/iam-base-class';
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
-import { ApiGateway } from 'aws-cdk-lib/aws-events-targets';
-import * as targets from '@aws-cdk/aws-route53-targets';
 
 export class InfrastructureStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: InfrastructureStackProps) {
@@ -20,7 +18,11 @@ export class InfrastructureStack extends cdk.Stack {
 
     //#region Parameters
 
-    const apiDomain: string = 'api.jayteewashington.com';
+    // Context Variables
+    const envContext = this.node.tryGetContext("env");
+    const env = this.node.tryGetContext(envContext);
+
+    const apiDomain: string = env.api;
     const apistage: string = DEPLOY_ENVIRONMENT == 'dev' ? 'v1' : 'v2';
 
     console.log(`Domain Configured - ${DEPLOY_DOMAIN}`);
@@ -60,12 +62,11 @@ export class InfrastructureStack extends cdk.Stack {
     const lambdafunction = new BaseLambda(this, `jayteewashington-email-lambda`, {
       entry: 'src/lambda/emailnotification.ts',
       name: `${DEPLOY_ENVIRONMENT}-jayteewashington-contact-email`,
-      roles: emailLambdaRole
-    });
-
-    const testfunction = new BaseLambda(this, `jayteewashington-test-lambda`, {
-      entry: 'src/lambda/test.ts',
-      name: `${DEPLOY_ENVIRONMENT}-jayteewashington-test-lambda`
+      roles: emailLambdaRole,
+      environment: {
+        URLTO: env.email,
+        ORIGIN: env.origin
+      }
     });
 
     //#endregion
@@ -73,9 +74,7 @@ export class InfrastructureStack extends cdk.Stack {
     //#region API Gateway
 
     // Define API Gateway
-    const api = new LambdaRestApi(this, `jayteewashington-api-gateway`, {
-      handler: lambdafunction,
-      proxy: false,
+    const api = new RestApi(this, `jayteewashington-api-gateway`, {
       restApiName: `${DEPLOY_ENVIRONMENT}-jayteewashington-api-gateway`,
       description: `This service is used with an Angular Front-End to process data for the ${DEPLOY_ENVIRONMENT} environment`,
       endpointConfiguration: { types: [ EndpointType.REGIONAL ] },
@@ -83,10 +82,15 @@ export class InfrastructureStack extends cdk.Stack {
         stageName: DEPLOY_ENVIRONMENT
       },
       defaultCorsPreflightOptions: {
-        allowOrigins: ['*'],//['https://' + DEPLOY_DOMAIN],
+        allowOrigins: [ env.origin ],
         allowMethods: ['GET', 'POST', 'OPTIONS'],
-        allowHeaders: ['Content-Type', 'Authorization']
-      }
+        allowHeaders: ['Content-Type', 
+          'Authorization',
+          'Accept',
+          'X-Requested-With'
+        ],
+        allowCredentials: true,
+      },
     });
 
     // Lookup PROD hosted zone for the certificate
@@ -144,11 +148,9 @@ export class InfrastructureStack extends cdk.Stack {
 
     // Define Lambda Integration
     const contactEmailIntegration = new LambdaIntegration(lambdafunction);
-    const testDataIntegration = new LambdaIntegration(testfunction);
 
     const versionStage = api.root.addResource(apistage);
     versionStage.addResource('email').addMethod('POST', contactEmailIntegration);
-    versionStage.addResource('test').addMethod('GET', testDataIntegration);
 
     //#endregion
   }

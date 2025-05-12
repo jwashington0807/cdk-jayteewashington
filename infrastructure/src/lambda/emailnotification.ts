@@ -1,62 +1,74 @@
 import { SendEmailCommand, SESv2Client } from '@aws-sdk/client-sesv2';
 import { EmailTemplate } from '../ses/email-template';
-import { IEmailEvent } from '../../models/ses';
+import { UserEmail } from '../../models/ses';
+import { Handler, Context } from 'aws-lambda';
+import { User } from 'aws-cdk-lib/aws-iam';
+import { getEnvironmentData } from 'worker_threads';
 
-const ses = new SESv2Client({ region: "us-east-1" });
+// Set the AWS Region.
+const REGION = "us-east-1";
 
-export const handler = async (event: IEmailEvent) => {
+const ses = new SESv2Client({ region: REGION });
 
-    //const date = new Date();
-    //const formattedDate = date.toLocaleDateString('en-EN', { day: 'numeric', month: 'short'});
+export const handler: Handler = async (event, context: Context) => {
 
-    const command = new SendEmailCommand({
-        Destination: {
-            ToAddresses: [event.reciever],
-        },
-        FromEmailAddress: 'JT <noreply@jayteewashington.com>',
-        EmailTags: [{ Name: 'type', Value: 'sent-confirmation' }],
-        ReplyToAddresses: [ 'noreply@jayteewashington.com' ],
-        Content: {
-            Simple: {
-                Subject: { Data: 'You have a new contact submission'},
-                Body: {
-                    Html: {
-                        Charset: 'UTF-8',
-                        Data: EmailTemplate(
-                            {
-                                id: event.id,
-                                name: event.name,
-                                comments: event.comments,
-                                email: event.email,
-                                reciever: 'jaytee.washington@gmail.com',
-                                origin: event.origin
-                            }
-                        )
+    try {
+        // Parse JSON Body
+        const body = JSON.parse(event.body) as UserEmail;
+        const emailTo = process.env.URLTO as string;
+        const originURL = process.env.ORIGIN as string;
+
+        // Construct Email Specs
+        const command = new SendEmailCommand({
+            Destination: {
+                ToAddresses: [body.reciever],
+            },
+            FromEmailAddress: 'JT <noreply@jayteewashington.com>',
+            EmailTags: [{ Name: 'type', Value: 'sent-confirmation' }],
+            ReplyToAddresses: [ 'noreply@jayteewashington.com' ],
+            Content: {
+                Simple: {
+                    Subject: { Data: 'You have a new contact submission'},
+                    Body: {
+                        Html: {
+                            Charset: 'UTF-8',
+                            Data: EmailTemplate(
+                                {
+                                    name: body.name,
+                                    comments: body.comments,
+                                    email: body.email,
+                                    reciever: emailTo,
+                                    origin: body.origin
+                                }
+                            )
+                        }
                     }
                 }
             }
-        }
-    });
+        });
 
-    try {
+        // Attempt to send via SES
         let response = await ses.send(command);
 
+        // If successful, send response
         return {
             statusCode: 200, 
-            isBase64Encoded: false,
             headers: {
-                "Access-Control-Allow-Origin" : '*', // Required for CORS support to work
+                "Access-Control-Allow-Origin" : originURL, // Required for CORS support to work
+                "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
             },
-            body: JSON.stringify('Success')
+            body: JSON.stringify({ message: 'Email Sent Successfully' })
         };
     }
     catch (error) {
         
         return {
-            statusCode: 503,
-            isBase64Encoded: false,
+            statusCode: 500,
             headers: {
                 "Access-Control-Allow-Origin" : '*', // Required for CORS support to work
+                "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
             },
             body: JSON.stringify(error)
         };

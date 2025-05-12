@@ -84,6 +84,24 @@
     "@aws-cdk/aws-elasticloadbalancingV2:albDualstackWithoutPublicIpv4SecurityGroupRulesDefault": true,
     "@aws-cdk/aws-iam:oidcRejectUnauthorizedConnections": true,
     "@aws-cdk/core:enableAdditionalMetadataCollection": true,
-    "domainzoneid": "Z0129507P31AKAF5UMS6"
+    "domainzoneid": "Z0129507P31AKAF5UMS6",
+    "staging": {
+      "env": "staging",
+      "origin": "localhost",
+      "api": "",
+      "email": "jayteewashington@gmail.com"
+    },
+    "dev": {
+      "env": "dev",
+      "origin": "dev.jayteewashington.com",
+      "api": "api.jayteewashington.com",
+      "email": "jayteewashington@gmail.com"
+    },
+    "prod": {
+      "env": "prod",
+      "origin": "jayteewashington.com",
+      "api": "api.jayteewashington.com",
+      "email": "jayteewashington@gmail.com"
+    }
   }
 }
