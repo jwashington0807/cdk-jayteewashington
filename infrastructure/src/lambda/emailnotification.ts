@@ -13,7 +13,7 @@ export const handler: Handler = async (event, context: Context) => {
     // Get Environment Variables
     const emailTo = process.env.URLTO as string;
     const originURL = process.env.ORIGIN as string;
-    
+
     try {
         // Parse JSON Body
         const body = JSON.parse(event.body) as UserEmail;
@@ -21,7 +21,7 @@ export const handler: Handler = async (event, context: Context) => {
         // Construct Email Specs
         const command = new SendEmailCommand({
             Destination: {
-                ToAddresses: [body.reciever],
+                ToAddresses: [emailTo],
             },
             FromEmailAddress: 'JT <noreply@jayteewashington.com>',
             EmailTags: [{ Name: 'type', Value: 'sent-confirmation' }],
@@ -36,8 +36,7 @@ export const handler: Handler = async (event, context: Context) => {
                                 {
                                     name: body.name,
                                     comments: body.comments,
-                                    email: body.email,
-                                    reciever: emailTo
+                                    email: body.email
                                 }
                             )
                         }
