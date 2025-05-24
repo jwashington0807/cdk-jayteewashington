@@ -23,7 +23,7 @@ export class InfrastructureStack extends cdk.Stack {
     const env = this.node.tryGetContext(envContext);
 
     const apiDomain: string = env.api;
-    const apistage: string = DEPLOY_ENVIRONMENT == 'dev' ? 'v1' : 'v2';
+    const apistage: string = DEPLOY_ENVIRONMENT == 'dev' || 'staging' ? 'v1' : 'v2';
 
     console.log(`Domain Configured - ${env.origin}`);
     console.log(`${DEPLOY_ENVIRONMENT} environment detected`);
@@ -67,6 +67,11 @@ export class InfrastructureStack extends cdk.Stack {
         URLTO: env.email,
         ORIGIN: env.origin
       }
+    });
+
+    const testfunction = new BaseLambda(this, `jayteewashington-test-lambda`, {
+      entry: 'src/lambda/test.ts',
+      name: `${DEPLOY_ENVIRONMENT}-jayteewashington-test-message`
     });
 
     //#endregion
@@ -148,9 +153,11 @@ export class InfrastructureStack extends cdk.Stack {
 
     // Define Lambda Integration
     const contactEmailIntegration = new LambdaIntegration(lambdafunction);
+    const testEmailIntegration = new LambdaIntegration(testfunction);
 
     const versionStage = api.root.addResource(apistage);
     versionStage.addResource('email').addMethod('POST', contactEmailIntegration);
+    versionStage.addResource('test').addMethod('GET', testEmailIntegration);
 
     //#endregion
   }

@@ -87,8 +87,8 @@
     "domainzoneid": "Z0129507P31AKAF5UMS6",
     "staging": {
       "env": "staging",
-      "origin": "http://localhost",
-      "api": "",
+      "origin": "*",
+      "api": "127.0.0.1:3000",
       "email": "jaytee.washington@gmail.com"
     },
     "dev": {

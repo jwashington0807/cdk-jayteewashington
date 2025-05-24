@@ -5,19 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "ng serve",
-            "cwd": "{workspaceFolder}/app-jayteewashington/",
-            "type": "chrome",
-            "request": "launch",
-            "preLaunchTask": "npm: start",
-            "url": "http://localhost:4200/"
+            "name": "Attach to SAM Local API",
+            "type": "node",
+            "request": "attach",
+            "address": "localhost",
+            "port": 5858,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/var/task",
+            "outFiles": [
+                "${workspaceFolder}/dist/**/*.js"
+            ],
+            "sourceMaps": true
         },
-        {
-            "name": "ng test",
-            "type": "chrome",
-            "request": "launch",
-            "preLaunchTask": "npm: test",
-            "url": "http://localhost:9876/debug.html"
-        }
     ]
 }
