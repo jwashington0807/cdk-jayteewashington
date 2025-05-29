@@ -10,4 +10,5 @@ export interface PipelineStackProps extends StackProps {
     angularAppRepoName: string;
     angularBranchName: string;
     description: string;
+    build: string;
 }

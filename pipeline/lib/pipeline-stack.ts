@@ -1,27 +1,24 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { PipelineStackProps } from '../models/pipeline';
-import { RemovalPolicy, SecretValue, Stack } from 'aws-cdk-lib';
+import { RemovalPolicy, Stack } from 'aws-cdk-lib';
 import { CompositePrincipal, PolicyDocument, PolicyStatement, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
 import { BuildSpec, LinuxBuildImage, PipelineProject, Cache, LocalCacheMode } from 'aws-cdk-lib/aws-codebuild';
 import { CodeBuildAction, GitHubSourceAction, S3DeployAction } from 'aws-cdk-lib/aws-codepipeline-actions';
-import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { ARecord, CnameRecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3BucketOrigin} from 'aws-cdk-lib/aws-cloudfront-origins';
-import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
+import { ApiGatewayDomain, CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
+import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 
 export class PipelineStack extends Stack {
   constructor(scope: Construct, id: string, props: PipelineStackProps) {
     super(scope, id, props);
 
-    //#region Console
-
-    // Simple Test to Confirm
-    console.log(props);
-
+    //#region Props
     // Destructure the props so that we can use the individual variables in this file
     const {
       envName,
@@ -32,16 +29,19 @@ export class PipelineStack extends Stack {
       subdomain,
       angularAppRepoName,
       angularBranchName,
-      description
+      description,
+      build
     } = props;
-
-    const angularTarget = envName == 'prod' ? 'production' : 'development';
 
     //#endregion
 
     //#region Github
+
     // Get Github Token
-    const gitHubToken = SecretValue.secretsManager('github-token');
+    const gitHubToken = Secret.fromSecretAttributes(this, "github-token", {
+      secretCompleteArn:
+        "arn:aws:secretsmanager:us-east-1:700081520826:secret:github-token-UG7mOa"
+    });
 
     // Create new role for github
     const infrastructureDeployRole = new Role(this, "InfrastructureDeployRole", {
@@ -89,7 +89,9 @@ export class PipelineStack extends Stack {
     //#region Domain
 
     // concat the domain name. If prod, the subdomain will be blank. Taken from the cdk.json file
-    const domainName = `${subdomain}${domain}`;
+    const domainName = `${subdomain}${domain}`; // eg. dev.jayteewashington.com
+    const wwwDomain = subdomain == '' ? 'www.' : ''; // eg. BLANK || www.
+    const certName = `${wwwDomain}${domainName}`; //eg. dev.jayteewashington.com || www.jayteewashington.com
 
     // creating a hosted zone for the certificate and other items needed for this application
     const hostedZone = new HostedZone(
@@ -105,10 +107,18 @@ export class PipelineStack extends Stack {
       this,
       "SSLCert",
       {
-        domainName,
+        domainName: domainName,
+        subjectAlternativeNames: [ certName == domainName ? '' : certName ],
         validation: CertificateValidation.fromDns(hostedZone)
       }
     )
+
+    // Create CNAME for www
+    new CnameRecord(this, `CnameWWWRecord`, {
+      recordName: 'www',
+      zone: hostedZone,
+      domainName: domainName,
+    });
 
     // Only access into the App should be through CloudFront. Granting only READ to S3 bucket
     const originAccessIdentity = new OriginAccessIdentity(
@@ -174,14 +184,14 @@ export class PipelineStack extends Stack {
                 nodejs: '20.x'
               },
               commands: [
-                'npm install',
+                'npm install --legacy-peer-deps',
                 'npm install -g @angular/cli'
               ]
             },
             build: {
               commands: [
                 'echo Building Angular Application...',
-                `ng build`
+                `ng build --configuration ${build}`
               ]
             }
           },
@@ -218,6 +228,10 @@ export class PipelineStack extends Stack {
         },
         buildSpec: BuildSpec.fromObject({
           version: '0.2',
+          env: {
+            account: process.env.CDK_DEFAULT_ACCOUNT,
+            region: process.env.CDK_DEFAULT_REGION
+          },
           phases: {
             install: {
               'runtime-versions': {
@@ -265,7 +279,7 @@ export class PipelineStack extends Stack {
             actionName: 'AngularSource',
             branch: angularBranchName,
             output: angularSourceOutput,
-            oauthToken: gitHubToken
+            oauthToken: gitHubToken.secretValue
           }
         ),
         new GitHubSourceAction(
@@ -275,7 +289,7 @@ export class PipelineStack extends Stack {
             actionName: 'InfrastructureSource',
             branch: infrastructureBranchName,
             output: infrastructureSourceOutput,
-            oauthToken: gitHubToken
+            oauthToken: gitHubToken.secretValue
           }
         )
       ]

@@ -1,5 +1,6 @@
 {
   "app": "npx ts-node --prefer-ts-exts bin/infrastructure.ts",
+  "requireApproval": "never",
   "watch": {
     "include": [
       "**"
@@ -82,6 +83,25 @@
     "@aws-cdk/aws-route53-targets:userPoolDomainNameMethodWithoutCustomResource": true,
     "@aws-cdk/aws-elasticloadbalancingV2:albDualstackWithoutPublicIpv4SecurityGroupRulesDefault": true,
     "@aws-cdk/aws-iam:oidcRejectUnauthorizedConnections": true,
-    "@aws-cdk/core:enableAdditionalMetadataCollection": true
+    "@aws-cdk/core:enableAdditionalMetadataCollection": true,
+    "domainzoneid": "Z0129507P31AKAF5UMS6",
+    "staging": {
+      "env": "staging",
+      "origin": "*",
+      "api": "127.0.0.1:3000",
+      "email": "jaytee.washington@gmail.com"
+    },
+    "dev": {
+      "env": "dev",
+      "origin": "https://dev.jayteewashington.com",
+      "api": "api.jayteewashington.com",
+      "email": "jaytee.washington@gmail.com"
+    },
+    "prod": {
+      "env": "prod",
+      "origin": "https://jayteewashington.com",
+      "api": "api.jayteewashington.com",
+      "email": "jaytee.washington@gmail.com"
+    }
   }
 }
