@@ -103,22 +103,34 @@ export class PipelineStack extends Stack {
     );
 
     // Creating SSL certificate
-    const certificate = new Certificate(
-      this,
-      "SSLCert",
-      {
-        domainName: domainName,
-        subjectAlternativeNames: [ certName == domainName ? '' : certName ],
-        validation: CertificateValidation.fromDns(hostedZone)
-      }
-    )
+
+    let certificate = certName == domainName ?
+      new Certificate(
+        this,
+        "SSLCert",
+        {
+          domainName: domainName,
+          validation: CertificateValidation.fromDns(hostedZone)
+        }
+      ) :
+      new Certificate(
+        this,
+        "SSLCert",
+        {
+          domainName: domainName,
+          subjectAlternativeNames: [ certName ],
+          validation: CertificateValidation.fromDns(hostedZone)
+        }
+      )
 
     // Create CNAME for www
-    new CnameRecord(this, `CnameWWWRecord`, {
-      recordName: 'www',
-      zone: hostedZone,
-      domainName: domainName,
-    });
+    if(wwwDomain == 'www.') {
+      new CnameRecord(this, `CnameWWWRecord`, {
+        recordName: 'www',
+        zone: hostedZone,
+        domainName: domainName,
+      });
+    }
 
     // Only access into the App should be through CloudFront. Granting only READ to S3 bucket
     const originAccessIdentity = new OriginAccessIdentity(
