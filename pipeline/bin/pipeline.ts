@@ -30,7 +30,7 @@ const domain = app.node.tryGetContext('domain');
 const subdomain = env.subdomain;
 const angularAppRepoName  = app.node.tryGetContext('angularRepoName');
 const angularBranchName  = env.angularBranchName;
-const certARN  = env.certARN;
+const build  = env.build;
 
 env = {
     envName,
@@ -42,7 +42,7 @@ env = {
     angularAppRepoName,
     angularBranchName,
     description: `Stack for the ${deployEnvironment} CI pipeline deployed using the CDK. If you need to delete this stack, delete the ${deployEnvironment} CDK infrastructure stack first.`,
-    certARN
+    build
 }
 
 // Creation of Pipeline Stack

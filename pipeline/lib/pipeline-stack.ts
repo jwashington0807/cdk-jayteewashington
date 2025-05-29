@@ -7,7 +7,7 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
 import { BuildSpec, LinuxBuildImage, PipelineProject, Cache, LocalCacheMode } from 'aws-cdk-lib/aws-codebuild';
 import { CodeBuildAction, GitHubSourceAction, S3DeployAction } from 'aws-cdk-lib/aws-codepipeline-actions';
-import { ARecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { ARecord, CnameRecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3BucketOrigin} from 'aws-cdk-lib/aws-cloudfront-origins';
@@ -30,7 +30,7 @@ export class PipelineStack extends Stack {
       angularAppRepoName,
       angularBranchName,
       description,
-      certARN
+      build
     } = props;
 
     //#endregion
@@ -89,7 +89,9 @@ export class PipelineStack extends Stack {
     //#region Domain
 
     // concat the domain name. If prod, the subdomain will be blank. Taken from the cdk.json file
-    const domainName = `${subdomain}${domain}`;
+    const domainName = `${subdomain}${domain}`; // eg. dev.jayteewashington.com
+    const wwwDomain = subdomain == '' ? 'www.' : ''; // eg. BLANK || www.
+    const certName = `${wwwDomain}${domainName}`; //eg. dev.jayteewashington.com || www.jayteewashington.com
 
     // creating a hosted zone for the certificate and other items needed for this application
     const hostedZone = new HostedZone(
@@ -105,10 +107,18 @@ export class PipelineStack extends Stack {
       this,
       "SSLCert",
       {
-        domainName,
+        domainName: domainName,
+        subjectAlternativeNames: [ certName == domainName ? '' : certName ],
         validation: CertificateValidation.fromDns(hostedZone)
       }
     )
+
+    // Create CNAME for www
+    new CnameRecord(this, `CnameWWWRecord`, {
+      recordName: 'www',
+      zone: hostedZone,
+      domainName: domainName,
+    });
 
     // Only access into the App should be through CloudFront. Granting only READ to S3 bucket
     const originAccessIdentity = new OriginAccessIdentity(
@@ -181,7 +191,7 @@ export class PipelineStack extends Stack {
             build: {
               commands: [
                 'echo Building Angular Application...',
-                `ng build --configuration development`
+                `ng build --configuration ${build}`
               ]
             }
           },
