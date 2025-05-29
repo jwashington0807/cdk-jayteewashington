@@ -103,22 +103,34 @@ export class PipelineStack extends Stack {
     );
 
     // Creating SSL certificate
-    const certificate = new Certificate(
-      this,
-      "SSLCert",
-      {
-        domainName: domainName,
-        subjectAlternativeNames: [ certName == domainName ? '' : certName ],
-        validation: CertificateValidation.fromDns(hostedZone)
-      }
-    )
+
+    let certificate = certName == domainName ?
+      new Certificate(
+        this,
+        "SSLCert",
+        {
+          domainName: domainName,
+          validation: CertificateValidation.fromDns(hostedZone)
+        }
+      ) :
+      new Certificate(
+        this,
+        "SSLCert",
+        {
+          domainName: domainName,
+          subjectAlternativeNames: [ certName ],
+          validation: CertificateValidation.fromDns(hostedZone)
+        }
+      )
 
     // Create CNAME for www
-    new CnameRecord(this, `CnameWWWRecord`, {
-      recordName: 'www',
-      zone: hostedZone,
-      domainName: domainName,
-    });
+    if(wwwDomain == 'www.') {
+      new CnameRecord(this, `CnameWWWRecord`, {
+        recordName: 'www',
+        zone: hostedZone,
+        domainName: domainName,
+      });
+    }
 
     // Only access into the App should be through CloudFront. Granting only READ to S3 bucket
     const originAccessIdentity = new OriginAccessIdentity(
@@ -276,7 +288,7 @@ export class PipelineStack extends Stack {
           {
             owner: repoOwner,
             repo: angularAppRepoName,
-            actionName: 'AngularSource',
+            actionName: 'AngularSourceV2',
             branch: angularBranchName,
             output: angularSourceOutput,
             oauthToken: gitHubToken.secretValue
@@ -286,7 +298,7 @@ export class PipelineStack extends Stack {
           {
             owner: repoOwner,
             repo: infrastructureRepoName,
-            actionName: 'InfrastructureSource',
+            actionName: 'InfrastructureSourceV2',
             branch: infrastructureBranchName,
             output: infrastructureSourceOutput,
             oauthToken: gitHubToken.secretValue
@@ -294,6 +306,11 @@ export class PipelineStack extends Stack {
         )
       ]
     })
+
+    /* 
+    "If you rotate the value in the Secret, you must also change at least one property of the CodePipeline to force CloudFormation to re-read the secret."
+    https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_codepipeline_actions.GitHubSourceActionProps.html
+    */
 
     // Add Build Stage
     pipeline.addStage({
