@@ -276,7 +276,7 @@ export class PipelineStack extends Stack {
           {
             owner: repoOwner,
             repo: angularAppRepoName,
-            actionName: 'AngularSource',
+            actionName: 'AngularSourceV2',
             branch: angularBranchName,
             output: angularSourceOutput,
             oauthToken: gitHubToken.secretValue
@@ -286,7 +286,7 @@ export class PipelineStack extends Stack {
           {
             owner: repoOwner,
             repo: infrastructureRepoName,
-            actionName: 'InfrastructureSource',
+            actionName: 'InfrastructureSourceV2',
             branch: infrastructureBranchName,
             output: infrastructureSourceOutput,
             oauthToken: gitHubToken.secretValue
@@ -294,6 +294,11 @@ export class PipelineStack extends Stack {
         )
       ]
     })
+
+    /* 
+    "If you rotate the value in the Secret, you must also change at least one property of the CodePipeline to force CloudFormation to re-read the secret."
+    https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_codepipeline_actions.GitHubSourceActionProps.html
+    */
 
     // Add Build Stage
     pipeline.addStage({
