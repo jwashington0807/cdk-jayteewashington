@@ -23,10 +23,11 @@ export class InfrastructureStack extends cdk.Stack {
     const env = this.node.tryGetContext(envContext);
 
     const apiDomain: string = env.api;
-    const apistage: string = (DEPLOY_ENVIRONMENT == 'dev' || 'staging') ? 'v1' : 'v2';
+    const apistage: string = 'v1';
 
     console.log(`Domain Configured - ${env.origin}`);
     console.log(`${DEPLOY_ENVIRONMENT} environment detected`);
+    console.log(`API Stage: ${apistage}`);
 
     //#endregion
 
@@ -46,10 +47,8 @@ export class InfrastructureStack extends cdk.Stack {
 
     //#region Simple Email Service
 
-    let emailLambdaRole = null;
-
     // Create SES Lambda Role
-    emailLambdaRole = new BaseIam(this, 'jayteewashington-ses-role', {
+    const emailLambdaRole = new BaseIam(this, 'jayteewashington-ses-role', {
       roleName: `${DEPLOY_ENVIRONMENT}-SesSenderRole`,
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       managedPolicyName: 'AmazonSESFullAccess',
@@ -113,14 +112,14 @@ export class InfrastructureStack extends cdk.Stack {
       }
     )
 
-    // Configure Custom Domain for API Gateway IF PROD
+    // Configure Custom Domain for API Gateway
     const apidomainName = new DomainName(this, `${DEPLOY_ENVIRONMENT}-api-gateway-domain`, {
       domainName: apiDomain,
       certificate: certificate,
       endpointType: EndpointType.REGIONAL
     });
 
-    const plan = new UsagePlan(this, 'MyUsagePlan', {
+    /*const plan = new UsagePlan(this, 'MyUsagePlan', {
       apiStages: [
         {
           api: api,
@@ -133,7 +132,7 @@ export class InfrastructureStack extends cdk.Stack {
       description: 'API key'
     });
     
-    plan.addApiKey(key);
+    plan.addApiKey(key);*/
 
     // Associate the Custom domain that we created with new APIGateway using BasePathMapping:
     new BasePathMapping(this, `${DEPLOY_ENVIRONMENT}-api-gateway-mapping`, {
