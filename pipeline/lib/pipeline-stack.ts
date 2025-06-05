@@ -1,4 +1,3 @@
-import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { PipelineStackProps } from '../models/pipeline';
 import { RemovalPolicy, Stack } from 'aws-cdk-lib';
@@ -11,7 +10,7 @@ import { ARecord, CnameRecord, HostedZone, RecordTarget } from 'aws-cdk-lib/aws-
 import { Certificate, CertificateValidation } from 'aws-cdk-lib/aws-certificatemanager';
 import { Distribution, OriginAccessIdentity, ViewerProtocolPolicy } from 'aws-cdk-lib/aws-cloudfront';
 import { S3BucketOrigin} from 'aws-cdk-lib/aws-cloudfront-origins';
-import { ApiGatewayDomain, CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
+import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import { Secret } from 'aws-cdk-lib/aws-secretsmanager';
 
 export class PipelineStack extends Stack {
@@ -153,7 +152,7 @@ export class PipelineStack extends Stack {
           origin: S3BucketOrigin.withOriginAccessControl(angularBucket),
           viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS
         },
-        domainNames: [domainName],
+        domainNames: [ certName == domainName ? domainName : certName],
         certificate
       }
     );
@@ -196,7 +195,7 @@ export class PipelineStack extends Stack {
                 nodejs: '20.x'
               },
               commands: [
-                'npm install --legacy-peer-deps',
+                'npm install',
                 'npm install -g @angular/cli'
               ]
             },
