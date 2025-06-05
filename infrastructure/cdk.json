@@ -89,19 +89,22 @@
       "env": "staging",
       "origin": "*",
       "api": "127.0.0.1:3000",
-      "email": "jaytee.washington@gmail.com"
+      "email": "jaytee.washington@gmail.com",
+      "sslcertarn": ""
     },
     "dev": {
       "env": "dev",
       "origin": "https://dev.jayteewashington.com",
       "api": "devapi.jayteewashington.com",
-      "email": "jaytee.washington@gmail.com"
+      "email": "jaytee.washington@gmail.com",
+      "sslcertarn": "arn:aws:acm:us-east-1:700081520826:certificate/695d63f7-463a-4617-8921-2da6d63172ec"
     },
     "prod": {
       "env": "prod",
       "origin": "https://jayteewashington.com",
       "api": "api.jayteewashington.com",
-      "email": "jaytee.washington@gmail.com"
+      "email": "jaytee.washington@gmail.com",
+      "sslcertarn": "arn:aws:acm:us-east-1:700081520826:certificate/73fc9617-756c-4d21-ae90-96fb7453ec57"
     }
   }
 }

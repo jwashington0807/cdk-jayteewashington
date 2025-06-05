@@ -22,9 +22,14 @@ export class InfrastructureStack extends cdk.Stack {
     const envContext = this.node.tryGetContext("env");
     const env = this.node.tryGetContext(envContext);
 
+    // Get API Variables
     const apiDomain: string = env.api;
     const apistage: string = 'v1';
 
+    // Get API certificate by ARN
+    const certificate = Certificate.fromCertificateArn(this, 'Certificate', env.sslcertarn);
+
+    // Log Info
     console.log(`Domain Configured - ${env.origin}`);
     console.log(`${DEPLOY_ENVIRONMENT} environment detected`);
     console.log(`API Stage: ${apistage}`);
@@ -99,51 +104,21 @@ export class InfrastructureStack extends cdk.Stack {
       },
     });
 
-    // Lookup PROD hosted zone for the certificate
-    const prodhostedZone = HostedZone.fromHostedZoneAttributes(this, 'APIHostedZone', {zoneName: 'jayteewashington.com', hostedZoneId: HOSTED_ZONE_ID});
-
-    // Creating SSL certificate from PROD and attach to API
-    const certificate = new Certificate(
-      this,
-      "SSLAPICert",
-      {
-        domainName: apiDomain,
-        validation: CertificateValidation.fromDns(prodhostedZone),
-      }
-    )
-
     // Configure Custom Domain for API Gateway
-    const apidomainName = new DomainName(this, `${DEPLOY_ENVIRONMENT}-api-gateway-hosted-domain`, {
+    const apiDomainName = new DomainName(this, `${DEPLOY_ENVIRONMENT}-api-gateway-domain`, {
       domainName: apiDomain,
-      certificate: certificate,
-      endpointType: EndpointType.REGIONAL
+      certificate: certificate
     });
-
-    /*const plan = new UsagePlan(this, 'MyUsagePlan', {
-      apiStages: [
-        {
-          api: api,
-            stage: api.deploymentStage,
-          },
-      ],
-    });
-    
-    const key = new ApiKey(this, 'MyApiKey', {
-      description: 'API key'
-    });
-    
-    plan.addApiKey(key);*/
 
     // Associate the Custom domain that we created with new APIGateway using BasePathMapping:
     new BasePathMapping(this, `${DEPLOY_ENVIRONMENT}-api-gateway-mapping`, {
-      domainName: apidomainName,
+      domainName: apiDomainName,
       restApi: api
     });
 
     //#endregion
 
     //#region Construct Integration and API Resources
-    console.log(`${DEPLOY_ENVIRONMENT} Creating Lambda Integration`);
 
     // Define Lambda Integration
     const contactEmailIntegration = new LambdaIntegration(lambdafunction);
