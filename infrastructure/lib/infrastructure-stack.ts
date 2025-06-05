@@ -23,7 +23,7 @@ export class InfrastructureStack extends cdk.Stack {
     const env = this.node.tryGetContext(envContext);
 
     const apiDomain: string = env.api;
-    const apistage: string = DEPLOY_ENVIRONMENT == 'dev' || 'staging' ? 'v1' : 'v2';
+    const apistage: string = (DEPLOY_ENVIRONMENT == 'dev' || 'staging') ? 'v1' : 'v2';
 
     console.log(`Domain Configured - ${env.origin}`);
     console.log(`${DEPLOY_ENVIRONMENT} environment detected`);
@@ -110,17 +110,10 @@ export class InfrastructureStack extends cdk.Stack {
       {
         domainName: apiDomain,
         validation: CertificateValidation.fromDns(prodhostedZone),
-        // I will need to manually add a CNAME to the DNS during 1st deployment if it doesn't do it for me
-
-            /*new CnameRecord(this, `${DEPLOY_ENVIRONMENT}-api-gateway-record-set`, {
-              zone: hostedZone,
-              recordName: 'api',
-              domainName: apiDomain
-            });*/
       }
     )
 
-    // Configure Custom Domain for API Gateway
+    // Configure Custom Domain for API Gateway IF PROD
     const apidomainName = new DomainName(this, `${DEPLOY_ENVIRONMENT}-api-gateway-domain`, {
       domainName: apiDomain,
       certificate: certificate,

@@ -94,7 +94,7 @@
     "dev": {
       "env": "dev",
       "origin": "https://dev.jayteewashington.com",
-      "api": "api.jayteewashington.com",
+      "api": "devapi.jayteewashington.com",
       "email": "jaytee.washington@gmail.com"
     },
     "prod": {
