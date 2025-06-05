@@ -46,9 +46,11 @@ export class InfrastructureStack extends cdk.Stack {
 
     //#region Simple Email Service
 
+    let emailLambdaRole = null;
+
     // Create SES Lambda Role
-    const emailLambdaRole = new BaseIam(this, 'jayteewashington-ses-role', {
-      roleName: 'SesSenderRole',
+    emailLambdaRole = new BaseIam(this, 'jayteewashington-ses-role', {
+      roleName: `${DEPLOY_ENVIRONMENT}-SesSenderRole`,
       assumedBy: new ServicePrincipal('lambda.amazonaws.com'),
       managedPolicyName: 'AmazonSESFullAccess',
       policyStatementActions: ['logs:CreateLogGroup', 'logs:CreateLogStream', 'logs:PutLogEvents']
