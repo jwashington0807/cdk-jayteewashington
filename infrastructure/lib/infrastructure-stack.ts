@@ -113,7 +113,7 @@ export class InfrastructureStack extends cdk.Stack {
     )
 
     // Configure Custom Domain for API Gateway
-    const apidomainName = new DomainName(this, `${DEPLOY_ENVIRONMENT}-api-gateway-domain`, {
+    const apidomainName = new DomainName(this, `${DEPLOY_ENVIRONMENT}-api-gateway-hosted-domain`, {
       domainName: apiDomain,
       certificate: certificate,
       endpointType: EndpointType.REGIONAL
