@@ -101,7 +101,7 @@
     },
     "prod": {
       "env": "prod",
-      "origin": "https://jayteewashington.com",
+      "origin": "https://www.jayteewashington.com",
       "api": "api.jayteewashington.com",
       "email": "jaytee.washington@gmail.com",
       "sslcertarn": "arn:aws:acm:us-east-1:700081520826:certificate/73fc9617-756c-4d21-ae90-96fb7453ec57"

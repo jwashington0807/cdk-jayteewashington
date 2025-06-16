@@ -92,7 +92,7 @@ export class InfrastructureStack extends cdk.Stack {
       deployOptions: {
         stageName: DEPLOY_ENVIRONMENT
       },
-      defaultCorsPreflightOptions: {
+      /*defaultCorsPreflightOptions: {
         allowOrigins: [ env.origin ],
         allowMethods: ['GET', 'POST', 'OPTIONS'],
         allowHeaders: ['Content-Type', 
@@ -101,7 +101,7 @@ export class InfrastructureStack extends cdk.Stack {
           'X-Requested-With'
         ],
         allowCredentials: true,
-      },
+      },*/
     });
 
     // Configure Custom Domain for API Gateway
